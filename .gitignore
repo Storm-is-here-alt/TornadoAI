@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# SQLite DB (local only)
+*.db
+*.db-shm
+*.db-wal
+corpus.db
+
+# Logs & tmp
+logs/
+tmp/
+*.log
+
+# Data folder (your PDFs/txts)
+data/
+
+# Editor junk
+.env
+.venv/
+.vscode/
+.idea/
