@@ -19,12 +19,20 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Gradle Wrapper Validation
-        uses: gradle/actions/wrapper-validation@v3
+      # Install a minimal Android SDK set so AGP can compile resources
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            platforms;android-35
+            build-tools;35.0.0
 
+      # Use Gradle Build Action directly (no wrapper required)
       - name: Build debug APK
         uses: gradle/actions/setup-gradle@v3
         with:
+          gradle-version: 8.9
           arguments: :app:assembleDebug
 
       - name: Upload APK
