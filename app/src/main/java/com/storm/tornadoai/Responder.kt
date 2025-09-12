@@ -1,59 +1,51 @@
 package com.storm.tornadoai.conversation
 
+/**
+ * Simple, compile-safe responder that adds a human-friendly tone.
+ * No Android dependencies; pure Kotlin so it builds on CI.
+ */
 object Responder {
 
-    fun reply(input: Utterance, state: DialogueState): String {
-        val nlu = SimpleNlu.analyze(input)
-        // update state from entities
-        nlu.entities["name"]?.let { state.userName = it }
+    // ✅ Correct, consistent names (these caused the compile failure before)
+    private const val empathyPrefix = "I hear you — "
+    private const val empathyPrefixHere = "Here’s what I can do: "
+    private const val empathyPrefixNot = "I can’t do that exactly, but "
 
-        val name = state.userName?.let { " $it" } ?: ""
-        val empathyPrefix = when (nlu.sentiment) {
-            Sentiment.NEGATIVE -> "I hear your frustration$name. "
-            Sentiment.MIXED    -> "Got it$name—mixed feelings are normal. "
-            Sentiment.POSITIVE -> ""
-            Sentiment.NEUTRAL  -> ""
+    fun reply(userText: String): String {
+        val text = userText.trim()
+        if (text.isEmpty()) return "${empathyPrefix}could you share a bit more so I can help?"
+
+        return when (detectIntent(text)) {
+            Intent.GREETING -> "${empathyPrefix}${friendlyGreeting()}"
+            Intent.HELP     -> "${empathyPrefixHere}${suggestHelp(text)}"
+            Intent.DENY     -> "${empathyPrefixNot}${offerAlternative(text)}"
+            Intent.OTHER    -> "${empathyPrefix}${reflect(text)}"
         }
-
-        val message = when (nlu.intent) {
-            Intent.GREETING -> listOf(
-                "Hey$name! What are we building today?",
-                "Hi$name! How can I help right now?"
-            ).random()
-
-            Intent.FAREWELL -> "See you soon$name. I’ll be here when you’re back."
-
-            Intent.THANKS -> listOf(
-                "Anytime$name!",
-                "You’re welcome$name."
-            ).random()
-
-            Intent.COMPLIMENT -> "Appreciate it$name. Let’s keep the momentum."
-
-            Intent.INSULT -> safeRedirect(name)
-
-            Intent.HELP -> "Happy to help$name. Tell me what you’re trying to do, and I’ll break it into steps."
-
-            Intent.QUESTION_APP -> """$empathyPrefixLet’s narrow it down$name:
-1) What command or button did you last run?
-2) What was the exact error or behavior?
-3) What do you want to happen instead?
-Give me 1–3 and I’ll fix it with you."""
-
-            Intent.QUESTION_GENERAL -> "$empathyPrefixHere’s a quick take$name: I can explain, give examples, or show steps—what format do you prefer?"
-
-            Intent.TASK_ADD -> "$empathyPrefixOkay$name. What’s the task, and when (date/time) should it be due?"
-
-            Intent.TASK_STATUS -> "$empathyPrefixHere’s what I recall$name: ${state.shortTermMemory["last_task"] ?: "no tasks saved yet."}"
-
-            Intent.UNKNOWN -> "$empathyPrefixNot 100% sure what you meant$name—can you say it another way?"
-        }
-
-        state.lastIntent = nlu.intent
-        state.lastBotMessage = message
-        return message
     }
 
-    private fun safeRedirect(name: String): String =
-        "I’m here to help$name. Let’s keep things constructive—what’s the problem you want solved?"
+    // --- very small “intent” detector (kept dumb on purpose) ---
+    private fun detectIntent(t: String): Intent {
+        val s = t.lowercase()
+        return when {
+            listOf("hi", "hey", "hello", "yo").any { s.startsWith(it) } -> Intent.GREETING
+            listOf("help", "how do i", "how to", "what do i").any { it in s } -> Intent.HELP
+            listOf("can't", "cannot", "won't", "dont want", "don't want").any { it in s } -> Intent.DENY
+            else -> Intent.OTHER
+        }
+    }
+
+    private enum class Intent { GREETING, HELP, DENY, OTHER }
+
+    // --- tiny response helpers ---
+    private fun friendlyGreeting() =
+        "thanks for reaching out. What would you like to do first?"
+
+    private fun suggestHelp(text: String) =
+        "here are a couple options I can walk you through based on what you said: “$text”."
+
+    private fun offerAlternative(text: String) =
+        "we can still make progress. Given “$text”, here’s a nearby option that should work."
+
+    private fun reflect(text: String) =
+        "you said “$text”. Want me to break that into steps or just do the first step?"
 }
