@@ -23,13 +23,19 @@ android {
                 "proguard-rules.pro"
             )
         }
-        debug {
-            isDebuggable = true
-        }
+        debug { isDebuggable = true }
     }
 
-    buildFeatures { viewBinding = true }
-    kotlinOptions { jvmTarget = "17" }
+    // ✅ Make Java side use 17
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    // ✅ Make Kotlin side use 17
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
 
 dependencies {
@@ -37,4 +43,9 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+}
+
+// Also pin the Kotlin toolchain to 17 (belt & suspenders)
+kotlin {
+    jvmToolchain(17)
 }
