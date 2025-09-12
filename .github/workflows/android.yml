@@ -1,4 +1,4 @@
-name: Build Debug APK
+name: Android CI
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,23 +18,24 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
 
-      # Install a minimal Android SDK set so AGP can compile resources
+      # Install Android SDK packages for API 34
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
           packages: |
             platform-tools
-            platforms;android-35
-            build-tools;35.0.0
+            platforms;android-34
+            build-tools;34.0.0
 
-      # Use Gradle Build Action directly (no wrapper required)
-      - name: Build debug APK
+      # Use a managed Gradle distribution (no wrapper in repo needed)
+      - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.9
-          arguments: :app:assembleDebug
+
+      - name: Build debug APK
+        run: gradle --no-daemon :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
