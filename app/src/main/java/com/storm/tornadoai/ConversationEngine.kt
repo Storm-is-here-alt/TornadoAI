@@ -1,13 +1,41 @@
 package com.storm.tornadoai.conversation
 
-class ConversationEngine(
-    private val state: DialogueState = DialogueState()
-) {
-    fun handle(text: String): String {
-        val u = Utterance(text)
-        return Responder.reply(u, state)
-    }
+import kotlin.random.Random
 
-    fun setUserName(name: String) { state.userName = name }
-    fun getState(): DialogueState = state
+enum class Sentiment { POSITIVE, NEGATIVE, NEUTRAL, MIXED }
+
+data class NLUResult(
+    val intent: String,
+    val sentiment: Sentiment,
+    val entities: Map<String, String> = emptyMap()
+)
+
+object Responder {
+
+    private val genericFallback = listOf(
+        "Can you tell me more?",
+        "I'm listening.",
+        "What makes you feel that way?",
+        "Go on, I'm here."
+    )
+
+    fun reply(nlu: NLUResult): String {
+        val name = nlu.entities["name"]?.let { " $it" } ?: ""
+
+        // --- Human-like empathy layer ---
+        val empathyPrefix = when (nlu.sentiment) {
+            Sentiment.NEGATIVE -> "I hear your frustration$name. "
+            Sentiment.MIXED    -> "Got it$name—mixed feelings are normal. "
+            Sentiment.POSITIVE -> ""
+            Sentiment.NEUTRAL  -> ""
+        }
+
+        return when (nlu.intent.lowercase()) {
+            "greeting" -> "$empathyPrefixHello$name! How’s it going?"
+            "goodbye"  -> "$empathyPrefixTake care$name. Talk soon."
+            "thanks"   -> "$empathyPrefixYou’re welcome$name!"
+            "help"     -> "$empathyPrefixI’m here to help. What do you need?"
+            else       -> empathyPrefix + genericFallback.random()
+        }
+    }
 }
