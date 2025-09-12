@@ -9,3 +9,15 @@ Usage:
 pkg install -y python poppler tesseract
 export OCR_LANG=eng
 bash init.sh
+
+
+Put your PDFs/TXT/MD in data/.
+
+Logs go into logs/.
+
+Local DB (corpus.db) is auto-created and ignored by git.
+
+
+---
+
+👉 Result: anyone cloning gets a **clean repo**, and your `corpus.db`, `logs/`, and `data/` stay private on your device.  
