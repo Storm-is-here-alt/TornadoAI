@@ -1,0 +1,6 @@
+https://feeds.reuters.com/reuters/topNews
+https://rss.nytimes.com/services/xml/rss/nyt/US.xml
+https://feeds.foxnews.com/foxnews/latest
+https://www.npr.org/rss/rss.php?id=1001
+https://www.politico.com/rss/politics-news.xml
+https://www.theguardian.com/us-news/rss

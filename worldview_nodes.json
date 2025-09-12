@@ -1,0 +1,179 @@
+{
+    "Supreme Court": {
+        "truth": "Unelected judges declared themselves final authority in Marbury v Madison (1803). No constitutional basis.",
+        "role": "Illegitimate but functions as controlling judicial body today.",
+        "keywords": [
+            "Supreme Court",
+            "SCOTUS",
+            "court ruling"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Can strike down bad laws quickly.",
+            "cons": "Destroys separation of powers; overrides Congress & States."
+        }
+    },
+    "OPEC/ESG/Climate Treaties": {
+        "truth": "Energy policies and global treaties keep nations dependent on oligarch-controlled systems.",
+        "role": "Leverage to control geopolitics and national independence.",
+        "keywords": [
+            "OPEC",
+            "ESG",
+            "climate treaties",
+            "energy dependence"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Can coordinate global energy policy.",
+            "cons": "Limits national sovereignty and creates economic leverage for foreign powers."
+        }
+    },
+    "Big Pharma/WHO": {
+        "truth": "Global health organizations influence medicine, vaccines, and emergency declarations.",
+        "role": "Power over healthcare policy and drug distribution.",
+        "keywords": [
+            "Big Pharma",
+            "WHO",
+            "vaccines",
+            "health emergency"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Can organize rapid medical response.",
+            "cons": "Centralized control can be misused; profit-driven influence."
+        }
+    },
+    "FED/BIS": {
+        "truth": "Central banks control money supply, debt, and interest rates globally.",
+        "role": "Power to manipulate economies and financial dependency.",
+        "keywords": [
+            "Federal Reserve",
+            "BIS",
+            "central bank",
+            "interest rates"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Stabilizes currency in crises.",
+            "cons": "Enables systemic debt, economic control, and inflation manipulation."
+        }
+    },
+    "Big Tech": {
+        "truth": "Tech companies harvest data and enforce censorship globally.",
+        "role": "Control over information and public perception.",
+        "keywords": [
+            "Big Tech",
+            "data harvesting",
+            "censorship",
+            "social media"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Can provide innovation and connectivity.",
+            "cons": "Mass surveillance and ideological enforcement."
+        }
+    },
+    "Gates/Soros Foundations": {
+        "truth": "NGOs with global influence overlapping in health, governance, and AI policy.",
+        "role": "Leverage through funding networks and advisory platforms.",
+        "keywords": [
+            "Gates Foundation",
+            "Soros Foundation",
+            "NGO influence",
+            "global governance"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Funding for health and research projects.",
+            "cons": "Influence on national policies and agendas."
+        }
+    },
+    "Epstein Network": {
+        "truth": "Connected individuals leveraged access, donations, and logistics for influence.",
+        "role": "Power network through finance and personal leverage.",
+        "keywords": [
+            "Epstein",
+            "Ghislaine Maxwell",
+            "donations",
+            "influence network"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "High-level networking and funding.",
+            "cons": "Criminal and unethical behavior; compromises political figures."
+        }
+    },
+    "Repurposed Drugs": {
+        "truth": "Some drugs like Ivermectin, Fenbendazole, Metformin show preclinical or off-label anti-cancer activity.",
+        "role": "Adjunct or experimental therapy outside standard medical consensus.",
+        "keywords": [
+            "Ivermectin",
+            "Fenbendazole",
+            "Metformin",
+            "Doxycycline"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Potential synergy with standard treatments.",
+            "cons": "Limited human data; unknown dosing and toxicity risks."
+        }
+    },
+    "Judicial Supremacy": {
+        "truth": "Unelected courts can overrule nations\u2019 laws, undermining constitutions.",
+        "role": "Instrument of centralized judicial authority.",
+        "keywords": [
+            "judicial supremacy",
+            "unelected judges",
+            "overrule laws"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Quick legal resolution in disputes.",
+            "cons": "Subverts legislative authority and constitutional limits."
+        }
+    },
+    "Desalination/Infrastructure": {
+        "truth": "Government coercion and funding threats influence local projects.",
+        "role": "Tool for political leverage over infrastructure decisions.",
+        "keywords": [
+            "desalination",
+            "infrastructure",
+            "state funding threat"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Rapid implementation of strategic projects.",
+            "cons": "Coercive tactics undermine local autonomy."
+        }
+    },
+    "Hollywood Influence": {
+        "truth": "Media and entertainment industries shape public perception and social narratives.",
+        "role": "Cultural soft power and agenda influence.",
+        "keywords": [
+            "Hollywood",
+            "entertainment industry",
+            "media influence",
+            "image shifts"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Creates awareness and storytelling.",
+            "cons": "Can manipulate beliefs and normalize agendas."
+        }
+    },
+    "Energy/Power Dependence": {
+        "truth": "Energy resources and treaties determine national independence and leverage.",
+        "role": "Control of energy creates geopolitical influence.",
+        "keywords": [
+            "energy dependence",
+            "OPEC",
+            "oil control",
+            "power leverage"
+        ],
+        "contradictions": [],
+        "logical_assessment": {
+            "pros": "Coordinates supply and stability.",
+            "cons": "Enables external control and economic coercion."
+        }
+    }
+}
