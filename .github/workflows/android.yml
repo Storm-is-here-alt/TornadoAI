@@ -21,7 +21,6 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Install Android SDK (manual, reliable)
       - name: Install Android commandline-tools
         run: |
           set -e
@@ -32,7 +31,7 @@ jobs:
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
 
-      - name: Accept licenses (non-interactive)
+      - name: Accept licenses
         run: yes | sdkmanager --licenses
 
       - name: Install required SDK packages
@@ -42,7 +41,6 @@ jobs:
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
 
-      # Force Gradle 8.7 to match AGP 8.4.x
       - name: Bootstrap Gradle wrapper
         run: |
           set -e
