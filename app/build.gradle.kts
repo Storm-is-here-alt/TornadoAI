@@ -23,6 +23,10 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            // Keep debug simple, no minify or shrink to avoid resource issues
+            isMinifyEnabled = false
+        }
     }
 
     buildFeatures {
@@ -33,9 +37,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    kotlinOptions { jvmTarget = "17" }
 }
 
 dependencies {
