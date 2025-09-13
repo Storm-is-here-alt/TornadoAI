@@ -24,36 +24,35 @@ object SystemMonitor {
         var prevTotal: Long? = null
 
         while (true) {
-            val cpuPct = withContext(Dispatchers.IO) {
-                readCpuPercent(prevIdle, prevTotal).also {
-                    prevIdle = it.second
-                    prevTotal = it.third
-                }.first
+            val (cpuPct, newIdle, newTotal) = withContext(Dispatchers.IO) {
+                safeCpuPercent(prevIdle, prevTotal)
             }
+            prevIdle = newIdle
+            prevTotal = newTotal
 
-            val (usedMB, availMB, totalMB) = readMem(context)
+            val (usedMB, availMB, totalMB) = safeMem(context)
 
-            emit(
-                SystemStats(
-                    cpuPercent = cpuPct,
-                    memUsedMB = usedMB,
-                    memAvailMB = availMB,
-                    memTotalMB = totalMB
-                )
-            )
+            emit(SystemStats(cpuPct, usedMB, availMB, totalMB))
             delay(intervalMs)
         }
     }
 
-    // Returns Triple: (cpu%, idle, total)
+    private fun safeCpuPercent(prevIdle: Long?, prevTotal: Long?): Triple<Float, Long?, Long?> {
+        return try {
+            readCpuPercent(prevIdle, prevTotal)
+        } catch (_: Throwable) {
+            Triple(0f, prevIdle, prevTotal)
+        }
+    }
+
+    // Returns Triple: (cpu%, idleAll, total)
     private fun readCpuPercent(prevIdle: Long?, prevTotal: Long?): Triple<Float, Long, Long> {
         val raf = RandomAccessFile("/proc/stat", "r")
         val line = raf.readLine()
         raf.close()
 
-        // cpu  user nice system idle iowait irq softirq steal guest guest_nice
-        val toks = line.split("\\s+".toRegex()).filter { it.isNotEmpty() }
-        // indexes: 1.. (skip "cpu")
+        // "cpu  user nice system idle iowait irq softirq steal guest guest_nice"
+        val toks = line.trim().split(Regex("\\s+"))
         val user = toks.getOrNull(1)?.toLongOrNull() ?: 0L
         val nice = toks.getOrNull(2)?.toLongOrNull() ?: 0L
         val system = toks.getOrNull(3)?.toLongOrNull() ?: 0L
@@ -74,6 +73,14 @@ object SystemMonitor {
             val idled = max(0L, idleAll - prevIdle)
             val cpuPct = ((totald - idled) * 100f) / totald.toFloat()
             Triple(cpuPct, idleAll, total)
+        }
+    }
+
+    private fun safeMem(context: Context): Triple<Long, Long, Long> {
+        return try {
+            readMem(context)
+        } catch (_: Throwable) {
+            Triple(0, 0, 0)
         }
     }
 
