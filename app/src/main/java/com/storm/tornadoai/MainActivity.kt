@@ -9,7 +9,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
-
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 class MainActivity : AppCompatActivity() {
 
     private lateinit var chatContainer: LinearLayout
