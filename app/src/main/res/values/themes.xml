@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.TornadoAI" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/md_theme_light_primary</item>
-        <item name="android:windowBackground">@color/md_theme_light_background</item>
-    </style>
+    <style name="Theme.TornadoAI" parent="Theme.Material3.DayNight.NoActionBar" />
 </resources>
