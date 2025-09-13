@@ -5,15 +5,16 @@ plugins {
 
 android {
     namespace = "com.storm.tornadoai"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.storm.tornadoai"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "0.1"
 
+        // Custom fields
         buildConfigField("String", "SD_DB_PATH", "\"/storage/6F3A-4D77/TornadoAI/corpus.db\"")
         buildConfigField("String", "NEWS_SOURCES_PATH", "\"/storage/6F3A-4D77/TornadoAI/News_sources.txt\"")
     }
@@ -26,7 +27,9 @@ android {
                 "proguard-rules.pro"
             )
         }
-        debug { isMinifyEnabled = false }
+        debug {
+            isMinifyEnabled = false
+        }
     }
 
     buildFeatures {
@@ -38,6 +41,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+kotlin {
+    // okay to keep – Gradle action also installs JDK 17
+    jvmToolchain(17)
 }
 
 dependencies {
