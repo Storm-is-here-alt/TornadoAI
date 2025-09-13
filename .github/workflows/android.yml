@@ -23,7 +23,6 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          # DO NOT quote this block. Each line is one package.
           packages: |
             platform-tools
             platforms;android-33
@@ -32,9 +31,9 @@ jobs:
       - name: Accept licenses
         run: yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
 
-      - name: Verify packages
+      - name: Verify SDK install
         run: |
-          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --list | sed -n '1,120p'
+          "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --list | head -n 50
           ls -la "$ANDROID_SDK_ROOT/platforms"
           ls -la "$ANDROID_SDK_ROOT/build-tools"
 
