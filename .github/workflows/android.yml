@@ -18,46 +18,23 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
 
-      # Set ANDROID_HOME and put sdkmanager on PATH
-      - name: Prepare Android SDK env
-        run: |
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-
-      # Make sure we have the latest cmdline-tools and accept licenses
-      - name: Install cmdline-tools + accept licenses
-        run: |
-          set -eux
-          mkdir -p "$ANDROID_HOME/cmdline-tools"
-          # install latest cmdline-tools into a "latest" dir if not present
-          if [ ! -d "$ANDROID_HOME/cmdline-tools/latest" ]; then
-            curl -L -o /tmp/cmdtools.zip "https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip"
-            unzip -q /tmp/cmdtools.zip -d /tmp/cmdtools
-            mkdir -p "$ANDROID_HOME/cmdline-tools/latest"
-            mv /tmp/cmdtools/cmdline-tools/* "$ANDROID_HOME/cmdline-tools/latest"/
-          fi
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
-
-      # Install the exact packages for API 34
-      - name: Install Android SDK packages (API 34)
-        run: |
-          set -eux
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-            "platform-tools" \
-            "platforms;android-34" \
-            "build-tools;34.0.0"
-
-      # Use a managed Gradle (no wrapper needed in your repo)
-      - name: Set up Gradle 8.9
-        uses: gradle/actions/setup-gradle@v3
+      # Install specific Android SDK packages (34 works well with AGP 8.5.x)
+      - name: Install Android SDK packages
+        uses: android-actions/setup-android@v3
         with:
-          gradle-version: 8.9
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+
+      # (Optional) If wrapper validation gave you trouble earlier, omit it for now
+      # - name: Gradle Wrapper Validation
+      #   uses: gradle/actions/wrapper-validation@v3
 
       - name: Build debug APK
-        run: gradle --no-daemon :app:assembleDebug
+        run: ./gradlew --no-daemon :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
