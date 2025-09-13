@@ -1,2 +1,4 @@
+- name: Make gradlew executable
+  run: chmod +x ./gradlew
 - name: Build debug APK
   run: ./gradlew --no-daemon :app:assembleDebug
