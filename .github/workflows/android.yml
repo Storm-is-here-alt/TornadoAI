@@ -22,9 +22,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Install Android SDK manually
+      # Install Android SDK (manual + reliable)
       - name: Install Android commandline-tools
         run: |
+          set -e
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip -o cmdtools.zip
           unzip -q cmdtools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
@@ -37,16 +38,19 @@ jobs:
 
       - name: Install required SDK packages
         run: |
+          set -e
           sdkmanager "platform-tools"
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
 
-      # Generate Gradle wrapper if missing
+      # Force Gradle **8.7** wrapper (AGP 8.x builds cleanly with it)
       - name: Bootstrap Gradle wrapper
         run: |
+          set -e
           curl -fsSL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
           unzip -q gradle.zip
           echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
+          gradle -v   # should print Gradle 8.7
           gradle wrapper --gradle-version 8.7
           chmod +x ./gradlew
 
