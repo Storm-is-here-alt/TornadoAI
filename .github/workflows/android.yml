@@ -1,4 +1,2 @@
 - name: Build debug APK
-  uses: gradle/actions/setup-gradle@v3
-  with:
-    arguments: :app:assembleDebug
+  run: ./gradlew --no-daemon :app:assembleDebug
