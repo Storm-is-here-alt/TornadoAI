@@ -20,7 +20,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- CPU -->
+        <!-- CPU row -->
         <TextView
             android:id="@+id/cpuLabel"
             android:layout_width="wrap_content"
@@ -50,7 +50,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Memory -->
+        <!-- Memory row -->
         <TextView
             android:id="@+id/memLabel"
             android:layout_width="wrap_content"
