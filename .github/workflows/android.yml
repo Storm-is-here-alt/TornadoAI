@@ -22,6 +22,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # --- Android SDK (manual, stable) ---
       - name: Install Android commandline-tools
         run: |
           set -e
@@ -42,11 +43,20 @@ jobs:
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
 
+      # --- Generate a Gradle Wrapper (since your repo is missing it) ---
+      - name: Bootstrap Gradle and generate wrapper
+        run: |
+          set -e
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
+          unzip -q gradle.zip
+          echo "$PWD/gradle-8.7/bin" >> $GITHUB_PATH
+          gradle -v
+          gradle wrapper --gradle-version 8.7
+          chmod +x ./gradlew
+
+      # Optional: validate now that wrapper exists
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v2
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
 
       - name: Build debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
