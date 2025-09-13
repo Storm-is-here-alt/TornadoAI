@@ -5,14 +5,12 @@ pluginManagement {
         mavenCentral()
     }
 }
-
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT) // <-- allow project-level repos
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         mavenCentral()
     }
 }
-
 rootProject.name = "TornadoAI"
 include(":app")
