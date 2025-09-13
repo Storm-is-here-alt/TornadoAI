@@ -5,7 +5,10 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // JitPack as fallback
         maven(url = "https://jitpack.io")
+        // SciJava Public (hosts cz.adaptech:tesseract4android)
+        maven(url = "https://maven.scijava.org/content/groups/public")
     }
 }
 
@@ -15,6 +18,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven(url = "https://jitpack.io")
+        maven(url = "https://maven.scijava.org/content/groups/public")
     }
 }
 
