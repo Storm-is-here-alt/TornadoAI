@@ -20,14 +20,25 @@ jobs:
           java-version: 17
           cache: gradle
 
-      # ✅ Install SDK packages one by one (reliable)
-      - name: Install Android SDK
+      # Install Android cmdline tools (no packages yet)
+      - name: Prepare Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
+
+      # Accept licenses + install packages ONE BY ONE
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Install platform-tools
+        run: sdkmanager "platform-tools"
+
+      - name: Install platform 34
+        run: sdkmanager "platforms;android-34"
+
+      - name: Install build-tools 34.0.0
+        run: sdkmanager "build-tools;34.0.0"
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
 
       - name: Build debug APK
         run: ./gradlew --no-daemon :app:assembleDebug
