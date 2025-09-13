@@ -1,12 +1,11 @@
-// app/build.gradle.kts
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    kotlin("android")
 }
 
 android {
     namespace = "com.storm.tornadoai"
-    compileSdk = 34  // AGP 8.5.2 is tested up to 34
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.storm.tornadoai"
@@ -24,15 +23,7 @@ android {
                 "proguard-rules.pro"
             )
         }
-        debug {
-            // keep defaults
-        }
-    }
-
-    buildFeatures {
-        // If you don’t use data binding, keep it off (it still creates some tasks, that’s fine)
-        dataBinding = false
-        viewBinding = true
+        debug { isDebuggable = true }
     }
 
     compileOptions {
@@ -48,9 +39,5 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.activity:activity-ktx:1.9.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-
-    // Tesseract4Android from Maven Central (works without JitPack)
-    implementation("cz.adaptech.tesseract4android:tesseract4android:4.1.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 }
