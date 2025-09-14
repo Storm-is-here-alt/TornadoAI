@@ -1,6 +1,5 @@
 package com.storm.tornadoai
 
-import android.graphics.Color
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -45,9 +44,7 @@ class ChatAdapter(
     }
 
     class UserVH(private val vb: ItemUserBinding) : RecyclerView.ViewHolder(vb.root) {
-        fun bind(m: ChatMessage) {
-            vb.text.text = m.content
-        }
+        fun bind(m: ChatMessage) { vb.text.text = m.content }
     }
 
     class BotVH(
@@ -67,14 +64,15 @@ class ChatAdapter(
                 vb.copyButton.visibility = View.GONE
             }
 
-            // sources list
             vb.sourcesContainer.removeAllViews()
             if (m.sources.isEmpty()) {
                 vb.sourcesContainer.visibility = View.GONE
             } else {
                 vb.sourcesContainer.visibility = View.VISIBLE
                 m.sources.forEach { s ->
-                    val card = ItemSourceCardBinding.inflate(LayoutInflater.from(vb.root.context), vb.sourcesContainer, false)
+                    val card = ItemSourceCardBinding.inflate(
+                        LayoutInflater.from(vb.root.context), vb.sourcesContainer, false
+                    )
                     card.title.text = s.title
                     card.snippet.text = s.snippet
                     card.url.text = s.url
