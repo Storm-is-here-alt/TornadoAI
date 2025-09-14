@@ -6,15 +6,17 @@ data class SourceCard(
     val title: String,
     val url: String,
     val snippet: String,
-    val colorIndex: Int
+    val colorIndex: Int,
+    val bias: BiasFilter
 ) {
     companion object {
+        // Neutral, professional tints
         val PALETTE = listOf(
-            0xFFE3F2FD.toInt(), // blue tint
-            0xFFE8F5E9.toInt(), // green tint
-            0xFFFFF3E0.toInt(), // orange tint
-            0xFFF3E5F5.toInt(), // purple tint
-            0xFFFFEBEE.toInt()  // red tint
+            0xFFE8EAED.toInt(), // light gray
+            0xFFDDEAF6.toInt(), // steel blue tint
+            0xFFE7F0EA.toInt(), // teal tint
+            0xFFEFE7F0.toInt(), // muted purple gray
+            0xFFF0EAE2.toInt()  // warm gray
         )
     }
 }
