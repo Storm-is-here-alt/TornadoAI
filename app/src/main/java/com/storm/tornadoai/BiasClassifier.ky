@@ -1,4 +1,4 @@
-package com.storm.tornadoai.logic
+package com.storm.tornadoai
 
 /**
  * Minimal BiasClassifier for ChatRepository.
