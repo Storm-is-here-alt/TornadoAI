@@ -1,0 +1,28 @@
+package com.storm.tornadoai
+
+import java.util.Locale
+
+object BiasClassifier {
+    // Very small heuristic map; extend as needed
+    private val left = setOf("theguardian.com","nytimes.com","vox.com","msnbc.com","huffpost.com")
+    private val right = setOf("foxnews.com","dailywire.com","breitbart.com","nypost.com")
+    private val state = setOf("rt.com","sputniknews.com","globaltimes.cn","tass.com")
+    private val mainstream = setOf("reuters.com","apnews.com","bbc.com","wsj.com","washingtonpost.com","cnn.com","npr.org")
+    private val independent = setOf("propublica.org","theintercept.com","reason.com","quillette.com","substack.com")
+
+    fun classify(url: String): BiasFilter {
+        val host = try {
+            val h = java.net.URI(url).host?.lowercase(Locale.US)?.removePrefix("www.")
+            h ?: return BiasFilter.INDEPENDENT
+        } catch (_: Throwable) { return BiasFilter.INDEPENDENT }
+
+        return when {
+            host in state -> BiasFilter.STATE
+            host in left -> BiasFilter.LEFT
+            host in right -> BiasFilter.RIGHT
+            host in mainstream -> BiasFilter.MAINSTREAM
+            host in independent -> BiasFilter.INDEPENDENT
+            else -> BiasFilter.INDEPENDENT
+        }
+    }
+}
