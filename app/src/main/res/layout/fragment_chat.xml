@@ -17,7 +17,6 @@
 
     <ProgressBar
         android:id="@+id/progress"
-        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="3dp"
         android:visibility="gone" />
@@ -46,22 +45,24 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/tweetsBtn"
-            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:minWidth="0dp"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:text="Tweets"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:iconPadding="0dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sendBtn"
-            style="@style/Widget.Material3.Button.FilledButton"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
             android:text="Send"
             android:textAllCaps="false"
-            android:layout_marginStart="8dp" />
+            app:cornerRadius="12dp"
+            app:iconPadding="0dp" />
     </LinearLayout>
 </LinearLayout>
