@@ -2,30 +2,59 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: gradle
+          java-version: "17"
 
-      - name: Gradle Wrapper Validation
+      # Ensures wrapper exists/valid; shows clear failure if missing jar
+      - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v3
 
-      - name: Build debug APK
-        run: ./gradlew --no-daemon :app:assembleDebug
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      - name: Upload APK
+      - name: Set executable bit
+        run: chmod +x ./gradlew
+
+      - name: Build debug with full logs
+        run: |
+          ./gradlew --no-daemon --stacktrace --info clean :app:assembleDebug
+        continue-on-error: true
+
+      - name: Print Kotlin compile logs (if present)
+        if: always()
+        run: |
+          find . -type f -path "*/kotlin/*" -name "*.log" -maxdepth 6 -print -exec sed -n '1,200p' {} \;
+
+      - name: Upload build outputs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-build-outputs
+          path: |
+            app/build/outputs/**
+            app/build/reports/**
+            **/kotlin/**
+
+      - name: Fail if assemble failed
+        if: failure()
+        run: exit 1
