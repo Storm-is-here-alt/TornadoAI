@@ -13,7 +13,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -47,6 +46,9 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
 
+    // Fragment KTX => viewModels(), activityViewModels()
+    implementation("androidx.fragment:fragment-ktx:1.8.2")
+
     // Lifecycle + ViewModel
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
@@ -54,7 +56,7 @@ dependencies {
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-    // CardView for cardBackgroundColor + cardUseCompatPadding
+    // CardView for cardBackgroundColor / cardUseCompatPadding
     implementation("androidx.cardview:cardview:1.0.0")
 
     // SQLite
@@ -64,7 +66,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 
-    // Networking (for web search / fetch)
+    // Networking & HTML parsing for Kotlin-only web search
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.18.1")
 
