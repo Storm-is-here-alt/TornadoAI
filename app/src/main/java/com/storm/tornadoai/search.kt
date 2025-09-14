@@ -1,6 +1,5 @@
 package com.storm.tornadoai
 
-import android.content.Context
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
@@ -50,7 +49,7 @@ class DuckDuckGoSearchService {
 }
 
 /** RSS-based search: read feeds, filter items matching query. */
-class RssSearchService(private val context: Context) {
+class RssSearchService(private val context: android.content.Context) {
     private val client = OkHttpClient()
 
     suspend fun search(query: String, limit: Int): List<SearchResult> {
@@ -209,23 +208,5 @@ object Summarizer {
         }
         if (bullets.isEmpty()) return "I couldn’t correlate much for “$query”. Try a more specific query."
         return "Here’s a stitched view of **$query**:\n\n" + bullets.joinToString("\n")
-    }
-}
-
-/** Tweets helper (restored) */
-object TweetGenerator {
-    fun splitIntoTweets(text: String, maxLen: Int = 270): List<String> {
-        val words = text.replace("\n", " ").split(" ")
-        val out = mutableListOf<String>()
-        var cur = StringBuilder()
-        for (w in words) {
-            if (cur.length + 1 + w.length > maxLen) {
-                out += cur.toString().trim()
-                cur = StringBuilder()
-            }
-            cur.append(' ').append(w)
-        }
-        if (cur.isNotBlank()) out += cur.toString().trim()
-        return out.take(20)
     }
 }
