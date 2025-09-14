@@ -6,6 +6,7 @@ import okhttp3.Request
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URI
+import java.net.URLEncoder
 import java.util.Locale
 import kotlin.math.ln
 
@@ -15,20 +16,54 @@ fun SearchResult.urlDomain(): String? = try {
     URI(this.url).host?.lowercase(Locale.US)?.removePrefix("www.")
 } catch (_: Throwable) { null }
 
-/** RSS-based search: read feeds, filter items that match the query (no external API). */
+/** DUCKDUCKGO HTML scraping (no API, pure Kotlin). */
+class DuckDuckGoSearchService {
+    private val client = OkHttpClient()
+
+    suspend fun search(query: String, limit: Int): List<SearchResult> {
+        val q = URLEncoder.encode(query, "UTF-8")
+        val url = "https://duckduckgo.com/html/?q=$q&kl=us-en"
+        val html = httpGet(url)
+        if (html.isBlank()) return emptyList()
+        val doc = Jsoup.parse(html)
+
+        // Results live in .result__a (title link) with snippet nearby
+        val out = mutableListOf<SearchResult>()
+        val links = doc.select(".result__a")
+        for (a in links) {
+            val title = a.text()
+            val href = a.absUrl("href")
+            if (href.isBlank()) continue
+            val container = a.closest(".result")
+            val snip = container?.selectFirst(".result__snippet")?.text().orEmpty()
+            out += SearchResult(title, href, snip)
+            if (out.size >= limit) break
+        }
+        return out
+    }
+
+    private fun httpGet(url: String): String {
+        return try {
+            val req = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
+            client.newCall(req).execute().use { r -> r.body?.string().orEmpty() }
+        } catch (_: Throwable) { "" }
+    }
+}
+
+/** RSS-based search: read feeds, filter items matching query. */
 class RssSearchService(private val context: Context) {
     private val client = OkHttpClient()
 
     suspend fun search(query: String, limit: Int): List<SearchResult> {
-        val feeds = context.assets.open("news_sources.txt").bufferedReader().readLines()
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-        val q = query.lowercase(Locale.US)
+        val feeds = runCatching {
+            context.assets.open("news_sources.txt").bufferedReader().readLines()
+        }.getOrElse { emptyList() }
 
+        val q = query.lowercase(Locale.US)
         val out = mutableListOf<SearchResult>()
         for (feed in feeds) {
-            val xml = httpGet(feed)
-            if (xml.isEmpty()) continue
+            val xml = httpGet(feed.trim())
+            if (xml.isBlank()) continue
             val doc = Jsoup.parse(xml, "", org.jsoup.parser.Parser.xmlParser())
             val chTitle = doc.selectFirst("channel>title")?.text().orEmpty()
             for (item in doc.select("item")) {
@@ -41,20 +76,19 @@ class RssSearchService(private val context: Context) {
                     if (out.size >= limit) return out
                 }
             }
-            if (out.size >= limit) break
         }
         return out.take(limit)
     }
 
     private fun httpGet(url: String): String {
         return try {
-            val req = Request.Builder().url(url).build()
+            val req = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
             client.newCall(req).execute().use { r -> r.body?.string().orEmpty() }
         } catch (_: Throwable) { "" }
     }
 }
 
-/** Tiny domain crawler: fetch homepage + a few internal links; score pages by query presence. */
+/** Tiny domain crawler */
 class DomainCrawler {
     private val client = OkHttpClient()
 
@@ -66,7 +100,7 @@ class DomainCrawler {
         fun addPage(url: String, doc: Document) {
             val text = doc.body()?.text().orEmpty()
             val s = scoreMatch(text.lowercase(Locale.US), q)
-            if (s > 0) {
+            if (s > 0.0) {
                 val title = doc.title().ifBlank { url }
                 val snippet = makeSnippet(text, q)
                 results += s to SearchResult(title, url, snippet)
@@ -80,12 +114,9 @@ class DomainCrawler {
             addPage(homeUrl, homeDoc)
             visited += homeUrl
 
-            // collect internal links
-            val links = homeDoc.select("a[href]").mapNotNull { a ->
-                val href = a.absUrl("href")
-                if (href.isBlank()) null else href
-            }.filter { it.startsWith("https://$seed") || it.startsWith("http://$seed") }
-             .distinct().take(20)
+            val links = homeDoc.select("a[href]").mapNotNull { it.absUrl("href") }
+                .filter { link -> link.contains(seed) }
+                .distinct().take(25)
 
             for (link in links) {
                 if (results.size >= maxPages) break
@@ -100,7 +131,7 @@ class DomainCrawler {
 
     private fun fetchDoc(url: String): Document? {
         return try {
-            val req = Request.Builder().url(url).build()
+            val req = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
             client.newCall(req).execute().use { r ->
                 val html = r.body?.string().orEmpty()
                 if (html.isBlank()) null else Jsoup.parse(html, url)
@@ -109,12 +140,12 @@ class DomainCrawler {
     }
 }
 
-/** Clean reader to extract text from arbitrary pages (no API). */
+/** HTML extractor */
 class HtmlFetcher {
     private val client = OkHttpClient()
     fun fetchText(url: String): String {
         return try {
-            val req = Request.Builder().url(url).build()
+            val req = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
             client.newCall(req).execute().use { resp ->
                 val html = resp.body?.string().orEmpty()
                 val doc = Jsoup.parse(html, url)
@@ -125,7 +156,7 @@ class HtmlFetcher {
     }
 }
 
-/** Simple match scoring (BM25-ish lite): term frequency + length normalization. */
+/** Heuristic scorer (BM25-ish lite) */
 fun scoreMatch(text: String, query: String): Double {
     if (query.isBlank() || text.isBlank()) return 0.0
     val terms = query.split(Regex("\\s+")).filter { it.isNotBlank() }
@@ -139,8 +170,7 @@ fun scoreMatch(text: String, query: String): Double {
 }
 
 fun countOccurrences(hay: String, needle: String): Int {
-    var i = 0
-    var c = 0
+    var i = 0; var c = 0
     while (true) {
         val j = hay.indexOf(needle, i, ignoreCase = true)
         if (j < 0) break
@@ -149,16 +179,17 @@ fun countOccurrences(hay: String, needle: String): Int {
     return c
 }
 
-fun makeSnippet(text: String, query: String, maxLen: Int = 200): String {
-    val idx = text.lowercase(Locale.US).indexOf(query.split(Regex("\\s+")).firstOrNull()?.lowercase(Locale.US) ?: "", 0, true)
+fun makeSnippet(text: String, query: String, maxLen: Int = 260): String {
+    val term = query.split(Regex("\\s+")).firstOrNull()?.lowercase(Locale.US) ?: ""
+    val idx = text.lowercase(Locale.US).indexOf(term)
     return if (idx >= 0) {
-        val start = (idx - 80).coerceAtLeast(0)
-        val end = (idx + 120).coerceAtMost(text.length)
+        val start = (idx - 120).coerceAtLeast(0)
+        val end = (idx + 140).coerceAtMost(text.length)
         text.substring(start, end).trim()
     } else text.take(maxLen)
 }
 
-/** “Connect the dots” summary from corpus + pages. */
+/** “Connect the dots” summary */
 object Summarizer {
     fun connect(query: String, corpus: List<String>, pages: List<Pair<SearchResult, String>>): String {
         val bullets = mutableListOf<String>()
@@ -171,7 +202,7 @@ object Summarizer {
             .map { it.trim() }
             .filter { it.length in 60..240 && scoreMatch(it.lowercase(Locale.US), query.lowercase(Locale.US)) > 0.0 }
             .distinct()
-            .take(8)
+            .take(10)
             .toList()
         if (keyLines.isNotEmpty()) {
             bullets += "From the web:"
@@ -182,25 +213,7 @@ object Summarizer {
     }
 }
 
-/** Tweets helper */
-object TweetGenerator {
-    fun splitIntoTweets(text: String, maxLen: Int = 270): List<String> {
-        val words = text.replace("\n", " ").split(" ")
-        val out = mutableListOf<String>()
-        var cur = StringBuilder()
-        for (w in words) {
-            if (cur.length + 1 + w.length > maxLen) {
-                out += cur.toString().trim()
-                cur = StringBuilder()
-            }
-            cur.append(' ').append(w)
-        }
-        if (cur.isNotBlank()) out += cur.toString().trim()
-        return out.take(20)
-    }
-}
-
-/** Corpus reader (optional corpus.db stored in app files). */
+/** Corpus reader (optional corpus.db placed in app files directory). */
 class CorpusReader(private val context: Context) {
     fun search(query: String): List<String> {
         val dbFile = context.getFileStreamPath("corpus.db")
@@ -234,7 +247,7 @@ class CorpusReader(private val context: Context) {
                 return hits.take(5)
             } catch (_: Throwable) { /* ignore */ }
         }
-        // fallback asset
+        // fallback asset (optional)
         return runCatching {
             context.assets.open("corpus_stub.txt").bufferedReader().readLines()
                 .filter { it.contains(query, ignoreCase = true) }
