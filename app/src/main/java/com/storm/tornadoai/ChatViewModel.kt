@@ -1,33 +1,43 @@
 package com.storm.tornadoai
 
-enum class Role { User, Bot }
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
-data class SourceCard(
-    val title: String,
-    val url: String,
-    val snippet: String,
-    val colorIndex: Int
-) {
-    companion object {
-        val PALETTE = listOf(
-            0xFFE3F2FD.toInt(), // blue tint
-            0xFFE8F5E9.toInt(), // green tint
-            0xFFFFF3E0.toInt(), // orange tint
-            0xFFF3E5F5.toInt(), // purple tint
-            0xFFFFEBEE.toInt()  // red tint
-        )
+data class UiState(
+    val messages: List<ChatMessage> = emptyList(),
+    val loading: Boolean = false
+)
+
+class ChatViewModel(app: Application) : AndroidViewModel(app) {
+
+    private val repo = ChatRepository(app)
+
+    private val _ui = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _ui
+
+    fun onUserMessage(text: String) {
+        val user = ChatMessage.user(text)
+        _ui.value = _ui.value.copy(messages = _ui.value.messages + user, loading = true)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = repo.answer(text)
+            val bot = ChatMessage.bot(result.answer, result.sources)
+            val list = _ui.value.messages + bot
+            _ui.value = UiState(messages = list, loading = false)
+        }
     }
-}
 
-data class ChatMessage(
-    val role: Role,
-    val content: String,
-    val sources: List<SourceCard> = emptyList(),
-    val isTweetDraft: Boolean = false
-) {
-    companion object {
-        fun user(text: String) = ChatMessage(Role.User, text)
-        fun bot(text: String, sources: List<SourceCard> = emptyList(), isTweetDraft: Boolean = false) =
-            ChatMessage(Role.Bot, text, sources, isTweetDraft)
+    fun generateTweetsFromLastAnswer() {
+        val last = _ui.value.messages.lastOrNull { it.role == Role.Bot } ?: return
+        val tweets = TweetGenerator.splitIntoTweets(last.content)
+        val tweetCards = tweets.map { tw ->
+            ChatMessage.bot("🧵 $tw", emptyList(), isTweetDraft = true)
+        }
+        _ui.value = _ui.value.copy(messages = _ui.value.messages + tweetCards)
     }
 }
