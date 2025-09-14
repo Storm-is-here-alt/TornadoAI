@@ -36,7 +36,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         val last = _ui.value.messages.lastOrNull { it.role == Role.Bot } ?: return
         val tweets = TweetGenerator.splitIntoTweets(last.content)
         val tweetCards = tweets.map { tw ->
-            ChatMessage.bot("🧵 Tweet draft:\n$tw", emptyList(), isTweetDraft = true)
+            ChatMessage.bot("🧵 $tw", emptyList(), isTweetDraft = true)
         }
         _ui.value = _ui.value.copy(messages = _ui.value.messages + tweetCards)
     }
