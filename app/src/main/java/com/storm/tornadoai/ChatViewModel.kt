@@ -1,27 +1,48 @@
 package com.storm.tornadoai
 
 import androidx.lifecycle.ViewModel
+import com.storm.tornadoai.ingest.PropagandaFilter
+import com.storm.tornadoai.model.BiasFilter
+import com.storm.tornadoai.model.ChatMessage
+import com.storm.tornadoai.model.Role
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-/**
- * Plain ViewModel (not AndroidViewModel) so we don't need an Application.
- * If you truly need Application later, we can switch to AndroidViewModel and a factory.
- */
+data class ChatUiState(
+    val messages: List<ChatMessage> = emptyList(),
+    val currentBias: BiasFilter = BiasFilter.None
+)
+
 class ChatViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow(ChatUiState())
+    val uiState: StateFlow<ChatUiState> = _uiState
 
-    private val repo = ChatRepository() // ← no arguments
+    fun onUserMessage(text: String) {
+        val userMsg = ChatMessage(Role.User, text)
+        _uiState.value = _uiState.value.copy(messages = _uiState.value.messages + userMsg)
 
-    private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
-    val messages: StateFlow<List<ChatMessage>> = _messages
+        // --- Stub answer (replace with repository later)
+        val rawBot = ChatMessage(Role.Bot, "Processing: \"$text\"")
 
-    fun send(text: String) {
-        if (text.isBlank()) return
-        // add user's message
-        val afterUser = _messages.value + ChatMessage(Role.USER, text)
-        // get bot reply
-        val botReply = repo.replyTo(text)
-        // publish both
-        _messages.value = afterUser + botReply
+        // Storm Protocol filter pass
+        val filtered = PropagandaFilter.process(rawBot, requireEvidence = false)
+        val annotated = rawBot.copy(
+            bias = filtered.bias,
+            sources = rawBot.sources + filtered.report.evidenceLinks.map { link ->
+                com.storm.tornadoai.model.SourceLink("source", link)
+            }
+        )
+
+        _uiState.value = _uiState.value.copy(messages = _uiState.value.messages + annotated)
+    }
+
+    fun generateTweetsFromLastAnswer() {
+        val last = _uiState.value.messages.lastOrNull { it.role == Role.Bot } ?: return
+        val draft = last.copy(isTweetDraft = true)
+        _uiState.value = _uiState.value.copy(messages = _uiState.value.messages + draft)
+    }
+
+    fun setBias(bias: BiasFilter) {
+        _uiState.value = _uiState.value.copy(currentBias = bias)
     }
 }
