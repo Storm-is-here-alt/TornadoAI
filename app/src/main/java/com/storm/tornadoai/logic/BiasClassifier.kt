@@ -1,48 +1,33 @@
 package com.storm.tornadoai.logic
 
 /**
- * Minimal, dependency-free bias scorer so ChatRepository can compile.
- * Swap out later for something smarter.
+ * Minimal no-deps bias classifier so the app compiles.
+ * Expand later with real logic.
  */
 class BiasClassifier {
 
-    data class BiasResult(
-        val label: Label,
-        val leftScore: Double,
-        val rightScore: Double,
-        val neutrality: Double
+    enum class Bias { NEUTRAL, LEFT, RIGHT, UNKNOWN }
+
+    data class Result(
+        val bias: Bias = Bias.UNKNOWN,
+        val confidence: Float = 0f
     )
 
-    enum class Label { LEFT, RIGHT, NEUTRAL, UNKNOWN }
-
-    fun classify(text: String?): BiasResult {
-        if (text.isNullOrBlank()) {
-            return BiasResult(Label.UNKNOWN, 0.0, 0.0, 1.0)
-        }
+    /** Instance method, in case code does `BiasClassifier().classify(text)` */
+    fun classify(text: String): Result {
+        if (text.isBlank()) return Result(Bias.UNKNOWN, 0f)
+        // trivial heuristic placeholder
         val t = text.lowercase()
-
-        val leftHints = listOf(
-            "universal healthcare","climate crisis","wealth tax",
-            "social justice","gun control","labor union","equity"
-        )
-        val rightHints = listOf(
-            "border security","2a","second amendment","tax cuts",
-            "school choice","america first","pro life","lower taxes"
-        )
-
-        val l = leftHints.count { it in t }
-        val r = rightHints.count { it in t }
-        val total = (l + r).coerceAtLeast(1)
-        val leftScore = l.toDouble() / total
-        val rightScore = r.toDouble() / total
-        val neutrality = if (l == 0 && r == 0) 1.0 else 0.0
-
-        val label = when {
-            l == 0 && r == 0 -> Label.NEUTRAL
-            leftScore  > rightScore + 0.15 -> Label.LEFT
-            rightScore > leftScore  + 0.15 -> Label.RIGHT
-            else -> Label.NEUTRAL
+        return when {
+            listOf("democrat", "progressive", "wef").any { it in t } -> Result(Bias.LEFT, 0.55f)
+            listOf("maga", "patriot", "conservative").any { it in t } -> Result(Bias.RIGHT, 0.55f)
+            else -> Result(Bias.NEUTRAL, 0.5f)
         }
-        return BiasResult(label, leftScore, rightScore, neutrality)
+    }
+
+    companion object {
+        /** Static-style call, in case code does `BiasClassifier.classify(text)` */
+        @JvmStatic
+        fun classify(text: String): Result = BiasClassifier().classify(text)
     }
 }
