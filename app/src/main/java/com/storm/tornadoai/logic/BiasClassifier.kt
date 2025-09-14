@@ -7,6 +7,9 @@ import com.storm.tornadoai.model.TechniqueHit
 /**
  * Storm Protocol: fast heuristics, zero dependencies.
  * Classifies bias directionality + propaganda/opinion features.
+ *
+ * CHANGE: "Loaded Language" is NOT counted as propaganda when aimed at
+ * government/officials/agencies (accountability override).
  */
 object BiasClassifier {
 
@@ -47,17 +50,30 @@ object BiasClassifier {
     )
 
     private val BANDWAGON = listOf("everyone knows", "the people want", "the majority agrees")
-
     private val WHATABOUTISM = listOf("what about", "but they didn’t", "and yet no one")
-
     private val AD_HOMINEM = listOf("idiot", "moron", "clown", "shill", "stooge", "puppet")
-
     private val STRAWMAN = listOf("so you’re saying", "so they claim that")
-
     private val APPEAL_TO_AUTH = listOf("experts say", "scientists agree", "officials confirm")
 
     private val URL_REGEX = Regex("""https?://\S+""", RegexOption.IGNORE_CASE)
     private val CITE_REGEX = Regex("""\[\d+\]|\([^)]+,\s*\d{4}\)""") // [1], (Smith, 2020)
+
+    // Targets that indicate the text is aimed at government/officials/agencies.
+    // All checks are done on lowercased text.
+    private val GOV_TARGET_MARKERS = listOf(
+        // branches & institutions
+        "government", "administration", "congress", "senate", "house", "parliament",
+        "supreme court", "scotus", "court", "agency", "department", "commission", "bureau",
+        // roles/titles
+        "president", "potus", "vice president", "vp", "senator", "congressman", "congresswoman",
+        "representative", "governor", "secretary", "attorney general", "ag", "mayor", "sheriff",
+        "judge", "justice", "prosecutor", "da", "district attorney",
+        // agencies (common + acronyms)
+        "fbi", "cia", "nsa", "dni", "doj", "dhs", "irs", "atf", "dea", "dod", "usps", "epa", "sec",
+        "faa", "cdc", "nih", "hhs", "treasury", "state department", "uscis", "ice", "cbp",
+        // misc bodies
+        "election board", "ethics committee", "oversight committee", "inspector general"
+    )
 
     fun classifyDirection(text: String): BiasFilter {
         val t = text.lowercase()
@@ -67,7 +83,6 @@ object BiasClassifier {
         val est = scoreContains(t, ESTABLISHMENT_MARKERS)
         val anti = scoreContains(t, ANTIEST_MARKERS)
 
-        // pick the strongest non-tie; break ties with None
         val pairs = listOf(
             BiasFilter.Left to left,
             BiasFilter.Right to right,
@@ -91,26 +106,32 @@ object BiasClassifier {
             return TechniqueHit(name, found.size, examples = found.take(5))
         }
 
-        listOfNotNull(
-            hit("Loaded Language", LOADED_LANGUAGE),
-            hit("Fear Appeal", FEAR_APPEAL),
-            hit("Bandwagon", BANDWAGON),
-            hit("Whataboutism", WHATABOUTISM),
-            hit("Ad Hominem", AD_HOMINEM),
-            hit("Strawman", STRAWMAN),
-            hit("Appeal to Authority", APPEAL_TO_AUTH),
-            hit("Weasel Words", WEASEL_WORDS)
-        ).forEach { techniques.add(it) }
+        // --- Accountability override: if targeting officials/agencies, do NOT count Loaded Language.
+        val isTargetingOfficials = GOV_TARGET_MARKERS.any { t.contains(it) }
+
+        // Compute hits (conditionally include "Loaded Language")
+        val loaded = if (isTargetingOfficials) null else hit("Loaded Language", LOADED_LANGUAGE)
+        val fear = hit("Fear Appeal", FEAR_APPEAL)
+        val bandwagon = hit("Bandwagon", BANDWAGON)
+        val whatabout = hit("Whataboutism", WHATABOUTISM)
+        val adhom = hit("Ad Hominem", AD_HOMINEM)
+        val straw = hit("Strawman", STRAWMAN)
+        val authority = hit("Appeal to Authority", APPEAL_TO_AUTH)
+        val weasel = hit("Weasel Words", WEASEL_WORDS)
+
+        listOfNotNull(loaded, fear, bandwagon, whatabout, adhom, straw, authority, weasel)
+            .forEach { techniques.add(it) }
 
         val opinion = OPINION_PHRASES.any { t.contains(it) }
 
         val links = URL_REGEX.findAll(text).map { it.value }.toList()
         val hasCites = links.isNotEmpty() || CITE_REGEX.containsMatchIn(text)
 
-        // crude score: weighted by technique density + loaded/fear boosts, capped 100
+        // Score: density of techniques, with boosts for loaded/fear when applicable.
         val density = techniques.sumOf { it.count } * 10
-        val boost = (if (techniques.any { it.name == "Loaded Language" }) 10 else 0) +
-                (if (techniques.any { it.name == "Fear Appeal" }) 10 else 0)
+        val boost =
+            (if (loaded != null) 10 else 0) +
+            (if (fear != null) 10 else 0)
         val opinionBoost = if (opinion) 5 else 0
         val score = (density + boost + opinionBoost).coerceIn(0, 100)
 
@@ -118,6 +139,7 @@ object BiasClassifier {
             if (opinion) add("Opinion phrasing detected.")
             if (!hasCites) add("No citations/links detected.")
             if (links.isNotEmpty()) add("Contains ${links.size} link(s).")
+            if (isTargetingOfficials) add("Accountability override: criticism targets officials/agencies; Loaded Language not penalized.")
         }
 
         return PropagandaReport(
