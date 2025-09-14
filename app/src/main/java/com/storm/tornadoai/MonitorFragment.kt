@@ -5,47 +5,51 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.storm.tornadoai.databinding.FragmentMonitorBinding
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
-class MonitorFragment : Fragment() {
+class ChatFragment : Fragment() {
 
-    private var _binding: FragmentMonitorBinding? = null
-    private val binding get() = _binding!!
+    private val vm: ChatViewModel by viewModels()
+    private lateinit var adapter: ChatAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentMonitorBinding.inflate(inflater, container, false)
-        return binding.root
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_chat, container, false)
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                SystemMonitor.observe(requireContext()).collect { s ->
-                    val cpu = s.cpuPercent.coerceIn(0f, 100f)
-                    binding.cpuPercent.text = String.format("%.1f%%", cpu)
-                    binding.cpuBar.progress = cpu.toInt()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        adapter = ChatAdapter()
 
-                    val used = s.memUsedMB
-                    val free = s.memAvailMB
-                    val total = s.memTotalMB
-                    val pct = if (total > 0) (used * 100f / total) else 0f
-                    binding.memPercent.text = String.format("%.1f%%", pct)
-                    binding.memBar.progress = pct.toInt()
-                    binding.memUsed.text = getString(R.string.mem_used_fmt, used)
-                    binding.memFree.text = getString(R.string.mem_free_fmt, free)
-                    binding.memTotal.text = getString(R.string.mem_total_fmt, total)
+        val list = view.findViewById<RecyclerView>(R.id.chat_list)
+        list.adapter = adapter
+
+        val input = view.findViewById<TextInputEditText>(R.id.chat_input)
+        val send = view.findViewById<MaterialButton>(R.id.chat_send)
+        val tweet = view.findViewById<MaterialButton>(R.id.chat_tweet)
+
+        send.setOnClickListener {
+            val text = input.text?.toString()?.trim().orEmpty()
+            if (text.isNotEmpty()) {
+                vm.onUserMessage(text)
+                input.setText("")
+            }
+        }
+
+        tweet.setOnClickListener {
+            vm.generateTweetsFromLastAnswer()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                vm.uiState.collect { state ->
+                    adapter.submitList(state.messages)
                 }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 }
