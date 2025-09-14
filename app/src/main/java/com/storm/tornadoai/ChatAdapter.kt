@@ -1,102 +1,67 @@
 package com.storm.tornadoai
 
-import android.text.method.LinkMovementMethod
-import android.text.util.Linkify
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.text.util.LinkifyCompat
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.storm.tornadoai.databinding.ItemBotBinding
-import com.storm.tornadoai.databinding.ItemSourceCardBinding
-import com.storm.tornadoai.databinding.ItemUserBinding
+import com.storm.tornadoai.model.BiasFilter
+import com.storm.tornadoai.model.ChatMessage
+import com.storm.tornadoai.model.Role
 
 class ChatAdapter(
-    private val onCopyTweet: (String) -> Unit
-) : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
+    private val data: MutableList<ChatMessage> = mutableListOf()
+) : RecyclerView.Adapter<ChatAdapter.VH>() {
 
-    companion object {
-        private const val TYPE_USER = 1
-        private const val TYPE_BOT = 2
-        val DIFF = object : DiffUtil.ItemCallback<ChatMessage>() {
-            override fun areItemsTheSame(o: ChatMessage, n: ChatMessage) = o === n
-            override fun areContentsTheSame(o: ChatMessage, n: ChatMessage) = o == n
-        }
+    class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val role: TextView = itemView.findViewById(R.id.chat_role)
+        val content: TextView = itemView.findViewById(R.id.chat_content)
+        val meta: TextView = itemView.findViewById(R.id.chat_meta)
     }
 
-    override fun getItemViewType(position: Int) =
-        if (getItem(position).role == Role.User) TYPE_USER else TYPE_BOT
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val inf = LayoutInflater.from(parent.context)
-        return if (viewType == TYPE_USER) {
-            UserVH(ItemUserBinding.inflate(inf, parent, false))
-        } else {
-            BotVH(ItemBotBinding.inflate(inf, parent, false), onCopyTweet)
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_chat, parent, false)
+        return VH(v)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val msg = getItem(position)
-        if (holder is UserVH) holder.bind(msg)
-        if (holder is BotVH) holder.bind(msg)
+    override fun getItemCount(): Int = data.size
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val msg = data[position]
+
+        holder.role.text = when (msg.role) {
+            Role.User -> "You"
+            Role.Bot -> "TornadoAI"
+        }
+
+        holder.content.text = msg.content
+
+        val parts = mutableListOf<String>()
+        if (msg.isTweetDraft) parts.add("Tweet Draft")
+        if (msg.sources.isNotEmpty()) {
+            parts.add("Sources: " + msg.sources.joinToString { it.title })
+        }
+        when (msg.bias) {
+            BiasFilter.Left -> parts.add("Bias: Left")
+            BiasFilter.Right -> parts.add("Bias: Right")
+            BiasFilter.Establishment -> parts.add("Bias: Establishment")
+            BiasFilter.AntiEstablishment -> parts.add("Bias: Anti-Establishment")
+            BiasFilter.Unknown -> parts.add("Bias: Unknown")
+            BiasFilter.None -> {}
+        }
+        val metaText = parts.joinToString(" • ")
+        holder.meta.text = metaText
+        holder.meta.visibility = if (metaText.isEmpty()) View.GONE else View.VISIBLE
     }
 
-    class UserVH(private val vb: ItemUserBinding) : RecyclerView.ViewHolder(vb.root) {
-        fun bind(m: ChatMessage) {
-            vb.text.text = m.content
-            LinkifyCompat.addLinks(vb.text, Linkify.WEB_URLS)
-            vb.text.movementMethod = LinkMovementMethod.getInstance()
-        }
+    fun submitList(newList: List<ChatMessage>) {
+        data.clear()
+        data.addAll(newList)
+        notifyDataSetChanged()
     }
 
-    class BotVH(
-        private val vb: ItemBotBinding,
-        private val onCopyTweet: (String) -> Unit
-    ) : RecyclerView.ViewHolder(vb.root) {
-
-        fun bind(m: ChatMessage) {
-            vb.text.text = m.content
-            LinkifyCompat.addLinks(vb.text, Linkify.WEB_URLS)
-            vb.text.movementMethod = LinkMovementMethod.getInstance()
-
-            if (m.isTweetDraft) {
-                vb.copyButton.visibility = View.VISIBLE
-                vb.copyButton.setOnClickListener { onCopyTweet(m.content) }
-            } else {
-                vb.copyButton.visibility = View.GONE
-            }
-
-            vb.sourcesContainer.removeAllViews()
-            if (m.sources.isEmpty()) {
-                vb.sourcesContainer.visibility = View.GONE
-            } else {
-                vb.sourcesContainer.visibility = View.VISIBLE
-                m.sources.forEach { s ->
-                    val card = ItemSourceCardBinding.inflate(
-                        LayoutInflater.from(vb.root.context),
-                        vb.sourcesContainer,
-                        false
-                    )
-                    card.title.text = when (s.bias) {
-                        BiasFilter.MAINSTREAM -> "Mainstream • ${s.title}"
-                        BiasFilter.INDEPENDENT -> "Independent • ${s.title}"
-                        BiasFilter.STATE -> "State • ${s.title}"
-                        BiasFilter.LEFT -> "Left • ${s.title}"
-                        BiasFilter.RIGHT -> "Right • ${s.title}"
-                        else -> s.title
-                    }
-                    card.snippet.text = s.snippet
-                    card.url.text = s.url
-                    LinkifyCompat.addLinks(card.url, Linkify.WEB_URLS)
-                    card.url.movementMethod = LinkMovementMethod.getInstance()
-                    val color = SourceCard.PALETTE[s.colorIndex % SourceCard.PALETTE.size]
-                    card.root.setCardBackgroundColor(color)
-                    vb.sourcesContainer.addView(card.root)
-                }
-            }
-        }
+    fun append(msg: ChatMessage) {
+        data.add(msg)
+        notifyItemInserted(data.lastIndex)
     }
 }
