@@ -1,3 +1,3 @@
-This is a stub corpus line that mentions Federal Reserve and interest rates.
-Another corpus line about Big Tech and content moderation policies.
-Sample note on Supreme Court decisions affecting administrative agencies.
+This is a stub corpus line about Federal Reserve and interest rates.
+Another corpus line about tech policy debates and content moderation.
+Sample note on court decisions affecting administrative agencies.
