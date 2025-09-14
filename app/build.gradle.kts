@@ -42,14 +42,13 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-    // ViewModel & lifecycle
+    // Lifecycle + Activity KTX (for viewModels())
+    implementation("androidx.activity:activity-ktx:1.9.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
+    implementation("androidx.fragment:fragment-ktx:1.8.2")
 
-    // Needed for Activity.viewModels() extension
-    implementation("androidx.activity:activity-ktx:1.9.2")
-
-    // Networking / HTML parsing (pure Kotlin web fetching)
+    // Pure Kotlin networking & parsing
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jsoup:jsoup:1.17.2")
 
