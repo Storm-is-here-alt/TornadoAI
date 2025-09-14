@@ -16,9 +16,25 @@ data class UiState(
 class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = ChatRepository(app)
-
     private val _ui = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _ui
+
+    private var currentBias: BiasFilter = BiasFilter.ALL
+
+    fun setBias(b: BiasFilter) {
+        currentBias = b
+        // Re-render last bot message with filter applied
+        val last = _ui.value.messages.lastOrNull { it.role == Role.Bot } ?: return
+        val filtered = last.copy(sources = last.sources.filter { allowBias(it.bias) })
+        val updated = _ui.value.messages.toMutableList()
+        updated[updated.lastIndexOf(last)] = filtered
+        _ui.value = _ui.value.copy(messages = updated)
+    }
+
+    private fun allowBias(b: BiasFilter): Boolean {
+        if (currentBias == BiasFilter.ALL) return true
+        return currentBias == b
+    }
 
     fun onUserMessage(text: String) {
         val user = ChatMessage.user(text)
@@ -26,7 +42,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
 
         viewModelScope.launch(Dispatchers.IO) {
             val result = repo.answer(text)
-            val bot = ChatMessage.bot(result.answer, result.sources)
+            val filteredSources = result.sources.filter { allowBias(it.bias) }
+            val bot = ChatMessage.bot(result.answer, filteredSources)
             val list = _ui.value.messages + bot
             _ui.value = UiState(messages = list, loading = false)
         }
@@ -35,9 +52,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     fun generateTweetsFromLastAnswer() {
         val last = _ui.value.messages.lastOrNull { it.role == Role.Bot } ?: return
         val tweets = TweetGenerator.splitIntoTweets(last.content)
-        val tweetCards = tweets.map { tw ->
-            ChatMessage.bot("🧵 $tw", emptyList(), isTweetDraft = true)
-        }
+        val tweetCards = tweets.map { tw -> ChatMessage.bot("🧵 $tw", isTweetDraft = true) }
         _ui.value = _ui.value.copy(messages = _ui.value.messages + tweetCards)
     }
 }
