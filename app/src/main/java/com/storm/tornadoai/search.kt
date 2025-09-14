@@ -27,7 +27,6 @@ class DuckDuckGoSearchService {
         if (html.isBlank()) return emptyList()
         val doc = Jsoup.parse(html)
 
-        // Results live in .result__a (title link) with snippet nearby
         val out = mutableListOf<SearchResult>()
         val links = doc.select(".result__a")
         for (a in links) {
@@ -156,7 +155,7 @@ class HtmlFetcher {
     }
 }
 
-/** Heuristic scorer (BM25-ish lite) */
+/** Heuristic scorer */
 fun scoreMatch(text: String, query: String): Double {
     if (query.isBlank() || text.isBlank()) return 0.0
     val terms = query.split(Regex("\\s+")).filter { it.isNotBlank() }
@@ -213,45 +212,20 @@ object Summarizer {
     }
 }
 
-/** Corpus reader (optional corpus.db placed in app files directory). */
-class CorpusReader(private val context: Context) {
-    fun search(query: String): List<String> {
-        val dbFile = context.getFileStreamPath("corpus.db")
-        if (dbFile.exists()) {
-            try {
-                val db = android.database.sqlite.SQLiteDatabase.openDatabase(
-                    dbFile.path, null, android.database.sqlite.SQLiteDatabase.OPEN_READONLY
-                )
-                val hits = mutableListOf<String>()
-                val tables = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null)
-                while (tables.moveToNext()) {
-                    val t = tables.getString(0)
-                    val c = db.rawQuery("PRAGMA table_info($t)", null)
-                    val textCols = mutableListOf<String>()
-                    while (c.moveToNext()) {
-                        val name = c.getString(1)
-                        val type = (c.getString(2) ?: "").lowercase(Locale.US)
-                        if (type.contains("text") || type.contains("char")) textCols += name
-                    }
-                    c.close()
-                    if (textCols.isNotEmpty()) {
-                        val where = textCols.joinToString(" OR ") { "$it LIKE ?" }
-                        val args = arrayOf("%$query%")
-                        val q = db.rawQuery("SELECT ${textCols.first()} FROM $t WHERE $where LIMIT 5", args)
-                        while (q.moveToNext()) hits += q.getString(0)
-                        q.close()
-                        if (hits.size >= 5) { tables.close(); db.close(); return hits.take(5) }
-                    }
-                }
-                tables.close(); db.close()
-                return hits.take(5)
-            } catch (_: Throwable) { /* ignore */ }
+/** Tweets helper (restored) */
+object TweetGenerator {
+    fun splitIntoTweets(text: String, maxLen: Int = 270): List<String> {
+        val words = text.replace("\n", " ").split(" ")
+        val out = mutableListOf<String>()
+        var cur = StringBuilder()
+        for (w in words) {
+            if (cur.length + 1 + w.length > maxLen) {
+                out += cur.toString().trim()
+                cur = StringBuilder()
+            }
+            cur.append(' ').append(w)
         }
-        // fallback asset (optional)
-        return runCatching {
-            context.assets.open("corpus_stub.txt").bufferedReader().readLines()
-                .filter { it.contains(query, ignoreCase = true) }
-                .take(5)
-        }.getOrElse { emptyList() }
+        if (cur.isNotBlank()) out += cur.toString().trim()
+        return out.take(20)
     }
 }
