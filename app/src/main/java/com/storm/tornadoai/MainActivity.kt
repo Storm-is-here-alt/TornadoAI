@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.title = getString(R.string.app_name)
 
-        adapter = ChatAdapter { tweetText ->
+        adapter = ChatAdapter { tweetText: String ->
             copyToClipboard(tweetText)
             Snackbar.make(binding.root, "Tweet copied", Snackbar.LENGTH_SHORT).show()
         }
