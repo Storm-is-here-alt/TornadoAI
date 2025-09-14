@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         adapter = ChatAdapter { tweetText ->
             copyToClipboard(tweetText)
-            Snackbar.make(binding.root, "Tweet copied to clipboard", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, "Tweet copied", Snackbar.LENGTH_SHORT).show()
         }
         binding.recycler.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
         binding.recycler.adapter = adapter
@@ -37,9 +37,7 @@ class MainActivity : AppCompatActivity() {
         binding.input.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) { send(); true } else false
         }
-        binding.tweetsBtn.setOnClickListener {
-            vm.generateTweetsFromLastAnswer()
-        }
+        binding.tweetsBtn.setOnClickListener { vm.generateTweetsFromLastAnswer() }
 
         lifecycleScope.launch {
             vm.uiState.collectLatest { state ->
