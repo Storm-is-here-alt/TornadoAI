@@ -3,7 +3,6 @@ package com.storm.tornadoai
 import java.util.Locale
 
 object BiasClassifier {
-    // Very small heuristic map; extend as needed
     private val left = setOf("theguardian.com","nytimes.com","vox.com","msnbc.com","huffpost.com")
     private val right = setOf("foxnews.com","dailywire.com","breitbart.com","nypost.com")
     private val state = setOf("rt.com","sputniknews.com","globaltimes.cn","tass.com")
