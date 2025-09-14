@@ -1,6 +1,7 @@
 package com.storm.tornadoai
 
 import android.content.Context
+import com.storm.tornadoai.logic.BiasClassifier
 
 class ChatRepository(context: Context) {
 
