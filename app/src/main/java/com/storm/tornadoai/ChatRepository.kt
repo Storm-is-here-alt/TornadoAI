@@ -1,4 +1,39 @@
-package com.storm.tornadoai
+package package com.storm.tornadoai
+
+import android.content.Context
+
+class ChatRepository(context: Context) {
+
+    private val corpus = CorpusReader(context)
+    private val ddg = DuckDuckGoSearchService()
+    private val rss = RssSearchService(context)
+    private val crawler = DomainCrawler()
+    private val fetcher = HtmlFetcher()
+
+    suspend fun answer(query: String): AnswerBundle {
+        val corpusSnips = corpus.search(query).take(5)
+        val ddgHits = ddg.search(query, 10)
+        val rssHits = rss.search(query, 10)
+        val seeds = (ddgHits + rssHits).mapNotNull { it.urlDomain() }.distinct().take(3)
+        val crawled = crawler.crawlSeeds(seeds, query, maxPages = 12)
+        val all = (ddgHits + rssHits + crawled).distinctBy { it.url }.take(15)
+        val pages = all.map { it to fetcher.fetchText(it.url) }
+        val summary = Summarizer.connect(query, corpusSnips, pages)
+        val sources = all.mapIndexed { i, r ->
+            val bias = BiasClassifier.classify(r.url)
+            SourceCard(
+                title = r.title,
+                url = r.url,
+                snippet = r.snippet.take(320),
+                colorIndex = i % SourceCard.PALETTE.size,
+                bias = bias
+            )
+        }
+        return AnswerBundle(summary, sources)
+    }
+}
+
+data class AnswerBundle(val answer: String, val sources: List<SourceCard>)
 
 import android.content.Context
 
