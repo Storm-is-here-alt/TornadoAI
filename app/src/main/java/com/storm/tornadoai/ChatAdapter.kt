@@ -1,6 +1,7 @@
 package com.storm.tornadoai
 
 import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,7 +45,11 @@ class ChatAdapter(
     }
 
     class UserVH(private val vb: ItemUserBinding) : RecyclerView.ViewHolder(vb.root) {
-        fun bind(m: ChatMessage) { vb.text.text = m.content }
+        fun bind(m: ChatMessage) {
+            vb.text.text = m.content
+            LinkifyCompat.addLinks(vb.text, Linkify.WEB_URLS)
+            vb.text.movementMethod = LinkMovementMethod.getInstance()
+        }
     }
 
     class BotVH(
@@ -54,7 +59,7 @@ class ChatAdapter(
 
         fun bind(m: ChatMessage) {
             vb.text.text = m.content
-            LinkifyCompat.addLinks(vb.text, LinkifyCompat.WEB_URLS)
+            LinkifyCompat.addLinks(vb.text, Linkify.WEB_URLS)
             vb.text.movementMethod = LinkMovementMethod.getInstance()
 
             if (m.isTweetDraft) {
@@ -76,7 +81,7 @@ class ChatAdapter(
                     card.title.text = s.title
                     card.snippet.text = s.snippet
                     card.url.text = s.url
-                    LinkifyCompat.addLinks(card.url, LinkifyCompat.WEB_URLS)
+                    LinkifyCompat.addLinks(card.url, Linkify.WEB_URLS)
                     card.url.movementMethod = LinkMovementMethod.getInstance()
                     val color = SourceCard.PALETTE[s.colorIndex % SourceCard.PALETTE.size]
                     card.root.setCardBackgroundColor(color)
