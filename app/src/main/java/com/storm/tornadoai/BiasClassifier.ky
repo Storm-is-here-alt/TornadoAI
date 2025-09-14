@@ -2,26 +2,39 @@ package com.storm.tornadoai
 
 import java.util.Locale
 
+/**
+ * Very simple domain→bias mapper. Tweak the sets to your liking.
+ * Returns one of the existing BiasFilter enum values used by the UI.
+ */
 object BiasClassifier {
-    private val left = setOf("theguardian.com","nytimes.com","vox.com","msnbc.com","huffpost.com")
-    private val right = setOf("foxnews.com","dailywire.com","breitbart.com","nypost.com")
-    private val state = setOf("rt.com","sputniknews.com","globaltimes.cn","tass.com")
-    private val mainstream = setOf("reuters.com","apnews.com","bbc.com","wsj.com","washingtonpost.com","cnn.com","npr.org")
-    private val independent = setOf("propublica.org","theintercept.com","reason.com","quillette.com","substack.com")
+    private val LEFT = setOf(
+        "theguardian.com","nytimes.com","vox.com","msnbc.com","huffpost.com","slate.com"
+    )
+    private val RIGHT = setOf(
+        "foxnews.com","dailywire.com","breitbart.com","nypost.com","newsmax.com"
+    )
+    private val STATE = setOf(
+        "rt.com","sputniknews.com","tass.com","globaltimes.cn","xinhua.net"
+    )
+    private val MAINSTREAM = setOf(
+        "reuters.com","apnews.com","bbc.com","wsj.com","washingtonpost.com","cnn.com","npr.org","abcnews.go.com","cbsnews.com"
+    )
+    private val INDEPENDENT = setOf(
+        "propublica.org","theintercept.com","reason.com","quillette.com","substack.com","propublica.org"
+    )
 
     fun classify(url: String): BiasFilter {
         val host = try {
-            val h = java.net.URI(url).host?.lowercase(Locale.US)?.removePrefix("www.")
-            h ?: return BiasFilter.INDEPENDENT
-        } catch (_: Throwable) { return BiasFilter.INDEPENDENT }
+            java.net.URI(url).host?.lowercase(Locale.US)?.removePrefix("www.")
+        } catch (_: Throwable) { null } ?: return BiasFilter.INDEPENDENT
 
         return when {
-            host in state -> BiasFilter.STATE
-            host in left -> BiasFilter.LEFT
-            host in right -> BiasFilter.RIGHT
-            host in mainstream -> BiasFilter.MAINSTREAM
-            host in independent -> BiasFilter.INDEPENDENT
-            else -> BiasFilter.INDEPENDENT
+            host in STATE      -> BiasFilter.STATE
+            host in LEFT       -> BiasFilter.LEFT
+            host in RIGHT      -> BiasFilter.RIGHT
+            host in MAINSTREAM -> BiasFilter.MAINSTREAM
+            host in INDEPENDENT-> BiasFilter.INDEPENDENT
+            else               -> BiasFilter.INDEPENDENT
         }
     }
 }
