@@ -1,7 +1,6 @@
 package com.storm.tornadoai
 
 import android.os.Bundle
-import android.text.util.Linkify
 import android.view.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -33,11 +32,14 @@ class ChatFragment : Fragment() {
     }
 
     override fun onViewCreated(v: View, savedInstanceState: Bundle?) {
-        adapter = ChatAdapter { tweet ->
+        adapter = ChatAdapter { tweet: String ->
             copyToClipboard(tweet)
             Snackbar.make(binding.root, "Tweet copied", Snackbar.LENGTH_SHORT).show()
         }
-        binding.recycler.layoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
+
+        val lm = LinearLayoutManager(requireContext())
+        lm.stackFromEnd = true
+        binding.recycler.layoutManager = lm
         binding.recycler.adapter = adapter
         binding.recycler.itemAnimator = null
 
@@ -47,7 +49,9 @@ class ChatFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             vm.uiState.collectLatest { state ->
                 adapter.submitList(state.messages)
-                binding.recycler.scrollToPosition(state.messages.lastIndex.coerceAtLeast(0))
+                if (state.messages.isNotEmpty()) {
+                    binding.recycler.scrollToPosition(state.messages.size - 1)
+                }
                 binding.progress.isVisible = state.loading
             }
         }
