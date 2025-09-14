@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TornadoAI</string>
+    <string name="mem_used_fmt">%1$d MB used</string>
+    <string name="mem_free_fmt">%1$d MB free</string>
+    <string name="mem_total_fmt">%1$d MB total</string>
 </resources>
