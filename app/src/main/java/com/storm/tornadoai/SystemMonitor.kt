@@ -18,40 +18,26 @@ data class SystemStats(
 )
 
 object SystemMonitor {
-
     fun observe(context: Context, intervalMs: Long = 1000L): Flow<SystemStats> = flow {
         var prevIdle: Long? = null
         var prevTotal: Long? = null
-
         while (true) {
-            val (cpuPct, newIdle, newTotal) = withContext(Dispatchers.IO) {
-                safeCpuPercent(prevIdle, prevTotal)
-            }
-            prevIdle = newIdle
-            prevTotal = newTotal
-
+            val (cpuPct, newIdle, newTotal) = withContext(Dispatchers.IO) { safeCpuPercent(prevIdle, prevTotal) }
+            prevIdle = newIdle; prevTotal = newTotal
             val (usedMB, availMB, totalMB) = safeMem(context)
-
             emit(SystemStats(cpuPct, usedMB, availMB, totalMB))
             delay(intervalMs)
         }
     }
 
     private fun safeCpuPercent(prevIdle: Long?, prevTotal: Long?): Triple<Float, Long?, Long?> {
-        return try {
-            readCpuPercent(prevIdle, prevTotal)
-        } catch (_: Throwable) {
-            Triple(0f, prevIdle, prevTotal)
-        }
+        return try { readCpuPercent(prevIdle, prevTotal) } catch (_: Throwable) { Triple(0f, prevIdle, prevTotal) }
     }
 
-    // Returns Triple: (cpu%, idleAll, total)
+    // (cpu%, idleAll, total)
     private fun readCpuPercent(prevIdle: Long?, prevTotal: Long?): Triple<Float, Long, Long> {
         val raf = RandomAccessFile("/proc/stat", "r")
-        val line = raf.readLine()
-        raf.close()
-
-        // "cpu  user nice system idle iowait irq softirq steal guest guest_nice"
+        val line = raf.readLine(); raf.close()
         val toks = line.trim().split(Regex("\\s+"))
         val user = toks.getOrNull(1)?.toLongOrNull() ?: 0L
         val nice = toks.getOrNull(2)?.toLongOrNull() ?: 0L
@@ -77,18 +63,12 @@ object SystemMonitor {
     }
 
     private fun safeMem(context: Context): Triple<Long, Long, Long> {
-        return try {
-            readMem(context)
-        } catch (_: Throwable) {
-            Triple(0, 0, 0)
-        }
+        return try { readMem(context) } catch (_: Throwable) { Triple(0, 0, 0) }
     }
 
     private fun readMem(context: Context): Triple<Long, Long, Long> {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val mi = ActivityManager.MemoryInfo()
-        am.getMemoryInfo(mi)
-
+        val mi = ActivityManager.MemoryInfo(); am.getMemoryInfo(mi)
         val totalMB = (mi.totalMem / (1024 * 1024))
         val availMB = (mi.availMem / (1024 * 1024))
         val usedMB = (totalMB - availMB).coerceAtLeast(0)
