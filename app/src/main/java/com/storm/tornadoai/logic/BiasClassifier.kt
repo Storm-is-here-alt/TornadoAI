@@ -1,32 +1,15 @@
 package com.storm.tornadoai.logic
 
-/**
- * Minimal BiasClassifier for ChatRepository.
- * Returns a String: "LEFT", "RIGHT", "NEUTRAL", or "UNKNOWN".
- */
+/** Minimal placeholder to keep the app compiling. */
 object BiasClassifier {
+    enum class Bias { NEUTRAL, POSITIVE, NEGATIVE }
 
-    @JvmStatic
-    fun classify(input: String): String {
-        val t = input.lowercase()
-
+    fun classify(text: String): Bias {
+        val t = text.lowercase()
         return when {
-            listOf(
-                "nytimes.com", "npr.org", "theguardian.com",
-                "washingtonpost.com", "vox.com", "msnbc.com", "huffpost.com"
-            ).any { it in t } -> "LEFT"
-
-            listOf(
-                "foxnews.com", "breitbart.com", "newsmax.com",
-                "dailycaller.com", "epochtimes.com", "washingtonexaminer.com"
-            ).any { it in t } -> "RIGHT"
-
-            listOf(
-                "reuters.com", "apnews.com", "bloomberg.com",
-                "wsj.com", "financialtimes.com", "politico.com"
-            ).any { it in t } -> "NEUTRAL"
-
-            else -> "UNKNOWN"
+            listOf("love", "great", "awesome", "thanks").any { it in t } -> Bias.POSITIVE
+            listOf("hate", "stupid", "awful", "angry").any { it in t } -> Bias.NEGATIVE
+            else -> Bias.NEUTRAL
         }
     }
 }
