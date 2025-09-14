@@ -33,10 +33,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    private fun allowBias(b: BiasFilter): Boolean {
-        if (currentBias == BiasFilter.ALL) return true
-        return currentBias == b
-    }
+    private fun allowBias(b: BiasFilter): Boolean =
+        currentBias == BiasFilter.ALL || currentBias == b
 
     fun onUserMessage(text: String) {
         val user = ChatMessage.user(text)
