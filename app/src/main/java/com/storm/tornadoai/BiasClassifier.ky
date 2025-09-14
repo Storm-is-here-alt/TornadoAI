@@ -1,40 +1,53 @@
-package com.storm.tornadoai
-
-import java.util.Locale
+package com.storm.tornadoai.logic
 
 /**
- * Very simple domain→bias mapper. Tweak the sets to your liking.
- * Returns one of the existing BiasFilter enum values used by the UI.
+ * Minimal, dependency-free bias scorer so ChatRepository can compile.
+ * You can swap this out later for something smarter.
  */
-object BiasClassifier {
-    private val LEFT = setOf(
-        "theguardian.com","nytimes.com","vox.com","msnbc.com","huffpost.com","slate.com"
-    )
-    private val RIGHT = setOf(
-        "foxnews.com","dailywire.com","breitbart.com","nypost.com","newsmax.com"
-    )
-    private val STATE = setOf(
-        "rt.com","sputniknews.com","tass.com","globaltimes.cn","xinhua.net"
-    )
-    private val MAINSTREAM = setOf(
-        "reuters.com","apnews.com","bbc.com","wsj.com","washingtonpost.com","cnn.com","npr.org","abcnews.go.com","cbsnews.com"
-    )
-    private val INDEPENDENT = setOf(
-        "propublica.org","theintercept.com","reason.com","quillette.com","substack.com","propublica.org"
+class BiasClassifier {
+
+    data class BiasResult(
+        val label: Label,
+        val leftScore: Double,
+        val rightScore: Double,
+        val neutrality: Double
     )
 
-    fun classify(url: String): BiasFilter {
-        val host = try {
-            java.net.URI(url).host?.lowercase(Locale.US)?.removePrefix("www.")
-        } catch (_: Throwable) { null } ?: return BiasFilter.INDEPENDENT
+    enum class Label { LEFT, RIGHT, NEUTRAL, UNKNOWN }
 
-        return when {
-            host in STATE      -> BiasFilter.STATE
-            host in LEFT       -> BiasFilter.LEFT
-            host in RIGHT      -> BiasFilter.RIGHT
-            host in MAINSTREAM -> BiasFilter.MAINSTREAM
-            host in INDEPENDENT-> BiasFilter.INDEPENDENT
-            else               -> BiasFilter.INDEPENDENT
+    /** Very simple keyword/phrase heuristic. Returns a label + scores in [0..1]. */
+    fun classify(text: String?): BiasResult {
+        if (text.isNullOrBlank()) {
+            return BiasResult(Label.UNKNOWN, 0.0, 0.0, 1.0)
         }
+
+        val t = text.lowercase()
+
+        // tweak/expand these lists anytime
+        val leftHints = listOf(
+            "universal healthcare", "climate crisis", "wealth tax",
+            "social justice", "gun control", "labor union", "equity"
+        )
+        val rightHints = listOf(
+            "border security", "2a", "second amendment", "tax cuts",
+            "school choice", "america first", "pro life", "lower taxes"
+        )
+
+        val leftHits = leftHints.count { it in t }
+        val rightHits = rightHints.count { it in t }
+
+        val total = (leftHits + rightHits).coerceAtLeast(1)
+        val leftScore = leftHits.toDouble() / total
+        val rightScore = rightHits.toDouble() / total
+        val neutrality = if (leftHits == 0 && rightHits == 0) 1.0 else 0.0
+
+        val label = when {
+            leftHits == 0 && rightHits == 0 -> Label.NEUTRAL
+            leftScore > rightScore + 0.15 -> Label.LEFT
+            rightScore > leftScore + 0.15 -> Label.RIGHT
+            else -> Label.NEUTRAL
+        }
+
+        return BiasResult(label, leftScore, rightScore, neutrality)
     }
 }
