@@ -4,33 +4,38 @@ import android.content.Context
 
 class ChatRepository(context: Context) {
 
-    private val search: WebSearchService = if (BuildConfig.BING_KEY.isNotEmpty())
-        BingSearchService(BuildConfig.BING_KEY)
-    else
-        RssSearchService(context) // fallback: first 10 items from your feeds
-
+    // No external search API: we combine RSS results and a tiny crawler
+    private val rss = RssSearchService(context)
+    private val crawler = DomainCrawler()
     private val fetcher = HtmlFetcher()
     private val corpus = CorpusReader(context)
 
     suspend fun answer(query: String): AnswerBundle {
-        // 1) query corpus.db (optional)
+        // 1) corpus snippets
         val corpusSnips = corpus.search(query).take(5)
 
-        // 2) web search (up to 10)
-        val results = search.search(query, 10)
+        // 2) RSS “search”
+        val rssHits = rss.search(query, 10)
 
-        // 3) fetch & extract text
+        // 3) Lightweight crawl from RSS domains (broadens coverage)
+        val seeds = rssHits.mapNotNull { it.urlDomain() }.distinct().take(3)
+        val crawled = crawler.crawlSeeds(seeds, query, maxPages = 12)
+
+        // Merge and de-dup by url
+        val results = (rssHits + crawled).distinctBy { it.url }.take(10)
+
+        // 4) Fetch + extract text
         val pages = results.map { it to fetcher.fetchText(it.url) }
 
-        // 4) connect the dots (very simple heuristic summarizer)
+        // 5) Summarize
         val summary = Summarizer.connect(query, corpusSnips, pages)
 
-        // 5) build colored, padded sources list
+        // 6) Build source cards with color coding
         val sources = results.mapIndexed { i, r ->
             SourceCard(
                 title = r.title,
                 url = r.url,
-                snippet = r.snippet.ifEmpty { pages.firstOrNull { it.first.url == r.url }?.second?.take(200) ?: "" },
+                snippet = r.snippet.take(240),
                 colorIndex = i % SourceCard.PALETTE.size
             )
         }
