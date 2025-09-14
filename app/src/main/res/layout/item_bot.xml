@@ -35,9 +35,7 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:divider="@android:color/transparent"
-                android:showDividers="middle" />
+                android:layout_marginTop="12dp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
