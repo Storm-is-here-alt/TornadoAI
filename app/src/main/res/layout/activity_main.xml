@@ -16,12 +16,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- NEW: thin monitor bar -->
+    <include
+        android:id="@+id/monitorBar"
+        layout="@layout/include_monitor"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <Button
         android:id="@+id/btnPing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ping"
-        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintTop_toBottomOf="@id/monitorBar"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="16dp"/>
 
