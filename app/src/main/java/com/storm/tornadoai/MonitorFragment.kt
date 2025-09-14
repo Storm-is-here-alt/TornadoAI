@@ -20,7 +20,7 @@ class MonitorFragment : Fragment(R.layout.fragment_monitor) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
-                SystemMonitor.observe(requireContext(), intervalMs = 1000L).collect { s ->
+                SystemMonitor.observe(requireContext(), 1000L).collect { s ->
                     cpuText.text = "CPU: ${"%.1f".format(s.cpuPercent)} %"
                     memText.text = "RAM: ${s.memUsedMB}/${s.memTotalMB} MB (free ${s.memAvailMB} MB)"
                 }
