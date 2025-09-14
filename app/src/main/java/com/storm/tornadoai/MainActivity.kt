@@ -1,42 +1,20 @@
 package com.storm.tornadoai
 
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.storm.tornadoai.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private val sharedVm: SharedPrefsViewModel by viewModels() // holds bias filter across tabs
+    private lateinit var vb: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        vb = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(vb.root)
 
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = getString(R.string.app_name)
-
-        val nav = findViewById<BottomNavigationView>(R.id.bottomNav)
-        nav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_chat -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, ChatFragment())
-                        .commit()
-                    true
-                }
-                R.id.menu_monitor -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, MonitorFragment())
-                        .commit()
-                    true
-                }
-                else -> false
-            }
+        vb.btnPing.setOnClickListener {
+            vb.output.text = "✅ Build is stable. Ready to add features."
         }
-        nav.selectedItemId = R.id.menu_chat
     }
 }
