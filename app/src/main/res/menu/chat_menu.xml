@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/bias_all" android:title="Sources: All"/>
+    <item android:id="@+id/bias_mainstream" android:title="Sources: Mainstream"/>
+    <item android:id="@+id/bias_independent" android:title="Sources: Independent"/>
+    <item android:id="@+id/bias_state" android:title="Sources: State"/>
+    <item android:id="@+id/bias_left" android:title="Sources: Left"/>
+    <item android:id="@+id/bias_right" android:title="Sources: Right"/>
+</menu>
