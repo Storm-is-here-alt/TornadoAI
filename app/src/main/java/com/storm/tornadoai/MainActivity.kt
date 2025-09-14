@@ -1,55 +1,65 @@
 package com.storm.tornadoai
 
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import com.storm.tornadoai.databinding.ActivityMainBinding
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
+import com.storm.tornadoai.databinding.ActivityChatBinding
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private var _binding: ActivityMainBinding? = null
-    private val binding get() = _binding!!
+    private lateinit var binding: ActivityChatBinding
+    private val vm: ChatViewModel by viewModels()
+    private lateinit var adapter: ChatAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.title.text = getString(R.string.app_name)
-    }
 
-    override fun onStart() {
-        super.onStart()
-        // Lifecycle-safe collection prevents crashes on rotate/leave
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = getString(R.string.app_name)
+
+        adapter = ChatAdapter { tweetText ->
+            copyToClipboard(tweetText)
+            Snackbar.make(binding.root, "Tweet copied to clipboard", Snackbar.LENGTH_SHORT).show()
+        }
+        binding.recycler.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
+        binding.recycler.adapter = adapter
+        binding.recycler.itemAnimator = null
+
+        binding.sendBtn.setOnClickListener { send() }
+        binding.input.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) { send(); true } else false
+        }
+        binding.tweetsBtn.setOnClickListener {
+            vm.generateTweetsFromLastAnswer()
+        }
+
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                SystemMonitor.observe(this@MainActivity).collect { s ->
-                    // CPU
-                    val cpuPct = s.cpuPercent.coerceIn(0f, 100f)
-                    binding.cpuPercent.text = String.format("%.1f%%", cpuPct)
-                    binding.cpuBar.progress = cpuPct.toInt()
-
-                    // Memory
-                    val usedMB = s.memUsedMB
-                    val freeMB = s.memAvailMB
-                    val totalMB = s.memTotalMB
-                    val memPct =
-                        if (totalMB > 0) (usedMB * 100f / totalMB).coerceIn(0f, 100f) else 0f
-
-                    binding.memUsed.text = "${usedMB} MB used"
-                    binding.memFree.text = "${freeMB} MB free"
-                    binding.memTotal.text = "${totalMB} MB total"
-                    binding.memPercent.text = String.format("%.1f%%", memPct)
-                    binding.memBar.progress = memPct.toInt()
-                }
+            vm.uiState.collectLatest { state ->
+                adapter.submitList(state.messages)
+                binding.recycler.scrollToPosition(state.messages.lastIndex.coerceAtLeast(0))
+                binding.progress.visibility = if (state.loading) android.view.View.VISIBLE else android.view.View.GONE
             }
         }
     }
 
-    override fun onDestroy() {
-        _binding = null
-        super.onDestroy()
+    private fun send() {
+        val text = binding.input.text?.toString()?.trim().orEmpty()
+        if (text.isNotEmpty()) {
+            binding.input.setText("")
+            vm.onUserMessage(text)
+        }
+    }
+
+    private fun copyToClipboard(text: String) {
+        val cm = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        cm.setPrimaryClip(android.content.ClipData.newPlainText("tweet", text))
     }
 }
