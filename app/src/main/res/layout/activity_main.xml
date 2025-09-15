@@ -9,7 +9,7 @@
     android:background="#000000"
     tools:context=".MainActivity">
 
-    <!-- Top CPU/RAM bar -->
+    <!-- Top CPU/RAM monitor -->
     <TextView
         android:id="@+id/cpuMem"
         android:layout_width="0dp"
@@ -23,7 +23,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Chat output -->
+    <!-- Chat output list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatList"
         android:layout_width="0dp"
