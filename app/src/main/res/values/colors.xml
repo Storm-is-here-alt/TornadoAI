@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Matrix palette -->
+    <color name="matrixBlack">#050705</color>
+    <color name="matrixGreen">#00FF6A</color>
+
+    <!-- Used by monitor + buttons -->
     <color name="matrix_green">#00FF6A</color>
     <color name="monitor_bg">#0B0F0B</color>
     <color name="matrix_button_bg">#111311</color>
+
+    <!-- Colors your other drawables/layouts are asking for -->
+    <color name="mx_ripple">#33FFFFFF</color>
+    <color name="mx_green_dim">#112219</color>
+    <color name="mx_surface2">#0D130F</color>
+    <color name="mx_divider">#224433</color>
+    <color name="mx_green">#00FF6A</color>
+    <color name="mx_text">#C6FFD8</color>
+    <color name="mx_black">#000000</color>
 </resources>
