@@ -6,37 +6,40 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.storm.tornadoai.model.ChatMessage
+import com.storm.tornadoai.model.Role
 
-data class ChatMessage(
-    val text: String,
-    val isUser: Boolean
-)
-
+/**
+ * RecyclerView adapter for chat messages.
+ * Depends on model.ChatMessage ONLY. Do not redeclare data classes here.
+ */
 class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.VH>(DIFF) {
 
     companion object {
         private val DIFF = object : DiffUtil.ItemCallback<ChatMessage>() {
-            override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage) =
-                oldItem === newItem
-            override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage) =
-                oldItem == newItem
+            override fun areItemsTheSame(old: ChatMessage, new: ChatMessage): Boolean =
+                old.timestamp == new.timestamp && old.role == new.role && old.text == new.text
+
+            override fun areContentsTheSame(old: ChatMessage, new: ChatMessage): Boolean =
+                old == new
         }
     }
 
-    class VH(val tv: TextView) : RecyclerView.ViewHolder(tv)
+    class VH(val textView: TextView) : RecyclerView.ViewHolder(textView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val ctx = parent.context
-        val tv = TextView(ctx).apply {
-            setPadding(16, 12, 16, 12)
-            setTextColor(ctx.getColor(R.color.matrixGreen))
-            textSize = 14f
-        }
+        val tv = LayoutInflater.from(parent.context)
+            .inflate(android.R.layout.simple_list_item_1, parent, false) as TextView
         return VH(tv)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
-        holder.tv.text = if (item.isUser) "You: ${item.text}" else "AI: ${item.text}"
+        val prefix = when (item.role) {
+            Role.USER -> "You: "
+            Role.ASSISTANT -> "AI: "
+            Role.SYSTEM -> "Sys: "
+        }
+        holder.textView.text = prefix + item.text
     }
 }
