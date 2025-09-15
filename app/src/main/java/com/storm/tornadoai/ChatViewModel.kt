@@ -2,49 +2,32 @@ package com.storm.tornadoai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// Simple chat models kept here to avoid missing-type issues
+data class ChatUiState(val messages: List<ChatMessage> = emptyList())
 enum class Role { USER, ASSISTANT }
-
-data class ChatMessage(
-    val role: Role,
-    val content: String
-)
-
-data class UiState(
-    val messages: List<ChatMessage> = emptyList()
-)
+data class ChatMessage(val role: Role, val content: String)
 
 class ChatViewModel : ViewModel() {
-
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState: StateFlow<UiState> = _uiState
+    private val _uiState = MutableStateFlow(ChatUiState())
+    val uiState: StateFlow<ChatUiState> = _uiState
 
     fun onUserMessage(text: String) {
-        if (text.isBlank()) return
-
-        // Add the user message
         val withUser = _uiState.value.messages + ChatMessage(Role.USER, text)
-        _uiState.value = _uiState.value.copy(messages = withUser)
+        _uiState.value = ChatUiState(withUser)
 
-        // Produce a basic reply (no external processors)
+        // Fake assistant reply
         viewModelScope.launch {
-            val reply = respond(text)
-            val withBot = _uiState.value.messages + ChatMessage(Role.ASSISTANT, reply)
-            _uiState.value = _uiState.value.copy(messages = withBot)
+            delay(350)
+            val reply = ChatMessage(Role.ASSISTANT, "You said: $text")
+            _uiState.value = ChatUiState(_uiState.value.messages + reply)
         }
     }
 
-    /** Trivial bot response for now so the app compiles/runs */
-    private fun respond(input: String): String {
-        return "You said: $input"
-    }
-
-    /** Stub to keep callers happy; wire up later if you like */
     fun generateTweetsFromLastAnswer() {
-        // no-op for now
+        // no-op for now; you can hook your tweet generator here later
     }
 }
