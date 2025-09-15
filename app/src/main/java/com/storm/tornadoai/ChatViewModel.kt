@@ -2,32 +2,38 @@ package com.storm.tornadoai
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.storm.tornadoai.model.ChatMessage
+import com.storm.tornadoai.model.Role
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-data class ChatUiState(val messages: List<ChatMessage> = emptyList())
-enum class Role { USER, ASSISTANT }
-data class ChatMessage(val role: Role, val content: String)
-
+/**
+ * ViewModel that owns the chat timeline.
+ * Uses the centralized ChatMessage model (model/Models.kt).
+ */
 class ChatViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(ChatUiState())
-    val uiState: StateFlow<ChatUiState> = _uiState
 
-    fun onUserMessage(text: String) {
-        val withUser = _uiState.value.messages + ChatMessage(Role.USER, text)
-        _uiState.value = ChatUiState(withUser)
+    private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val messages: StateFlow<List<ChatMessage>> = _messages
 
-        // Fake assistant reply
+    fun sendUser(text: String) {
+        append(ChatMessage(role = Role.USER, text = text))
+        // placeholder echo; replace with real pipeline/coroutine call
+        respond("Received: $text")
+    }
+
+    private fun respond(text: String) {
         viewModelScope.launch {
-            delay(350)
-            val reply = ChatMessage(Role.ASSISTANT, "You said: $text")
-            _uiState.value = ChatUiState(_uiState.value.messages + reply)
+            append(ChatMessage(role = Role.ASSISTANT, text = text))
         }
     }
 
-    fun generateTweetsFromLastAnswer() {
-        // no-op for now; you can hook your tweet generator here later
+    private fun append(msg: ChatMessage) {
+        _messages.value = _messages.value + msg
+    }
+
+    fun clear() {
+        _messages.value = emptyList()
     }
 }
