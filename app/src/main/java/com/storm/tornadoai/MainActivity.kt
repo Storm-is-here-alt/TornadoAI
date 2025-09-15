@@ -4,8 +4,8 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
+import androidx.lifecycle.repeatOnLifecycle
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         val memText = findViewById<TextView>(R.id.memText)
 
         lifecycleScope.launch {
-            lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 SystemMonitor.observe(this@MainActivity, 1000L).collect { s ->
                     cpuText.text = "CPU: ${"%.1f".format(s.cpuPercent)} %"
                     memText.text = "RAM: ${s.memUsedMB}/${s.memTotalMB} MB"
