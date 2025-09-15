@@ -8,10 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v3
@@ -23,38 +21,23 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # Install Android SDK pieces that Gradle expects
       - name: Install Android SDK packages
         uses: android-actions/setup-android@v3
         with:
-          packages: |
-            platform-tools
-            platforms;android-34
-            build-tools;34.0.0
+          packages: "platform-tools platforms;android-34 build-tools;34.0.0"
+
+      - name: Accept Android SDK licenses (fallback)
+        run: yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --licenses
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       - name: Build Debug APK
-        # If your module isn't named 'app', change :app:assembleDebug accordingly
         run: ./gradlew --no-daemon :app:assembleDebug --stacktrace
 
-      # Upload whatever was produced. Cover both debug/release just in case.
       - name: Upload APK(s)
         uses: actions/upload-artifact@v4
         with:
           name: android-apks
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/*/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-
-      # (Optional) upload mapping if minify is ever enabled
-      - name: Upload mapping.txt
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mapping
-          path: app/build/outputs/mapping/**/mapping.txt
-          if-no-files-found: ignore
