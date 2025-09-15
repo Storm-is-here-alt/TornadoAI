@@ -15,9 +15,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
         val cpuText = findViewById<TextView>(R.id.cpuText)
         val memText = findViewById<TextView>(R.id.memText)
 
-        // Live system stats in the thin bar
         lifecycleScope.launch {
-            repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 SystemMonitor.observe(this@MainActivity, 1000L).collect { s ->
                     cpuText.text = "CPU: ${"%.1f".format(s.cpuPercent)} %"
                     memText.text = "RAM: ${s.memUsedMB}/${s.memTotalMB} MB"
@@ -25,7 +24,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
             }
         }
 
-        // Show chat UI
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, ChatFragment())
