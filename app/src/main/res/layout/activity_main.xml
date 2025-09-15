@@ -2,67 +2,58 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    tools:context=".MainActivity">
+    android:background="#000000">
 
-    <!-- Top CPU/RAM monitor -->
+    <!-- Title -->
     <TextView
-        android:id="@+id/cpuMem"
+        android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:text="CPU 0%  •  RAM 0%"
-        android:textColor="#00FF41"
-        android:textStyle="bold"
-        android:textSize="14sp"
+        android:text="TornadoAI — baseline build OK"
+        android:textSize="20sp"
+        android:textColor="#00FF00"
+        android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Chat output list -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/chatList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="12dp"
-        app:layout_constraintTop_toBottomOf="@id/cpuMem"
-        app:layout_constraintBottom_toTopOf="@id/inputRow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@android:layout/simple_list_item_1" />
-
-    <!-- Input row -->
+    <!-- Monitor row -->
     <LinearLayout
-        android:id="@+id/inputRow"
+        android:id="@+id/monitor_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/title"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <EditText
-            android:id="@+id/input"
+        <TextView
+            android:id="@+id/cpuText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Type…"
-            android:textColor="#00FF41"
-            android:textColorHint="#2A8F4A"
-            android:background="@android:color/transparent"
-            android:inputType="text"
-            android:maxLines="3" />
+            android:text="CPU: 0.0 %"
+            android:textColor="#00FF00"/>
 
-        <Button
-            android:id="@+id/sendBtn"
+        <TextView
+            android:id="@+id/memText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send" />
+            android:text="RAM: 0/0 MB"
+            android:textColor="#00FF00"/>
     </LinearLayout>
 
+    <!-- Fragment host -->
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/monitor_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
