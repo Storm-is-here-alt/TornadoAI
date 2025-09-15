@@ -1,61 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/matrixBlack"
-    android:padding="8dp">
+    android:background="?attr/colorSurface">
 
+    <!-- Thin system monitor bar -->
+    <LinearLayout
+        android:id="@+id/monitorBar"
+        android:layout_width="0dp"
+        android:layout_height="32dp"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:gravity="center_vertical"
+        android:background="@color/monitor_bg"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/cpuText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="CPU: 0.0 %"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="@color/matrix_green"/>
+
+        <TextView
+            android:id="@+id/memText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RAM: 0/0 MB"
+            android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+            android:textColor="@color/matrix_green"/>
+    </LinearLayout>
+
+    <!-- Chat list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_list"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:overScrollMode="never"
-        android:fadeScrollbars="true"
-        android:scrollbarStyle="insideInset"
-        android:paddingBottom="8dp"
-        android:divider="@null"/>
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        app:layout_constraintTop_toBottomOf="@id/monitorBar"
+        app:layout_constraintBottom_toTopOf="@id/inputRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/TerminalTextInput"
-        android:hint="Type message…">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/chat_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/matrixGreen"
-            android:textColorHint="@color/matrixGreen"
-            android:inputType="textCapSentences|textMultiLine"
-            android:maxLines="4"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
+    <!-- Input + buttons -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/inputRow"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"
-        android:paddingTop="6dp">
+        android:padding="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            app:boxStrokeColor="@color/matrix_green"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="2dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/chat_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Type a message…"
+                android:textColor="@color/matrix_green"
+                android:textColorHint="#5588FF88"
+                android:inputType="textMultiLine"
+                android:maxLines="4"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- NO custom style here; use defaults to avoid missing-style crashes -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chat_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Send"
+            app:icon="@drawable/ic_send"
+            app:iconPadding="6dp"
+            app:iconGravity="textStart"
+            app:backgroundTint="@color/matrix_button_bg"
+            app:strokeColor="@color/matrix_green"
+            app:strokeWidth="1dp"
+            android:textColor="@color/matrix_green"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/chat_tweet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
             android:text="Tweet"
-            style="@style/TerminalButton"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/chat_send"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Send"
-            style="@style/TerminalButton"
-            android:layout_marginStart="8dp"/>
+            app:icon="@drawable/ic_share"
+            app:iconPadding="6dp"
+            app:iconGravity="textStart"
+            app:backgroundTint="@color/matrix_button_bg"
+            app:strokeColor="@color/matrix_green"
+            app:strokeWidth="1dp"
+            android:textColor="@color/matrix_green"/>
     </LinearLayout>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
