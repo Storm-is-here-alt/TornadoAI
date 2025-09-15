@@ -1,36 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.TornadoAI" parent="Theme.Material3.Dark.NoActionBar">
-        <!-- App brand -->
-        <item name="android:statusBarColor">@color/mx_black</item>
-        <item name="android:navigationBarColor">@color/mx_black</item>
 
-        <!-- Material colors -->
-        <item name="colorPrimary">@color/mx_green</item>
-        <item name="colorOnPrimary">@color/mx_black</item>
-        <item name="colorSecondary">@color/mx_green_dim</item>
-        <item name="colorSurface">@color/mx_surface</item>
-        <item name="colorOnSurface">@color/mx_text</item>
-        <item name="colorBackground">@color/mx_black</item>
-        <item name="android:textColorPrimary">@color/mx_text</item>
+    <style name="Theme.TornadoAI" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- App palette (Material 3 color names) -->
+        <item name="colorPrimary">@color/matrixGreen</item>
+        <item name="colorOnPrimary">@color/matrixBlack</item>
+        <item name="colorSecondary">@color/matrixGreen</item>
+        <item name="colorOnSecondary">@color/matrixBlack</item>
+        <item name="colorSurface">@color/matrixBlack</item>
+        <item name="colorOnSurface">@color/matrixGreen</item>
+        <item name="colorBackground">@color/matrixBlack</item> <!-- this fixes the error -->
+        <item name="colorOnBackground">@color/matrixGreen</item>
 
-        <!-- EditText/OutlinedTextField colors (Material3) -->
-        <item name="textInputStyle">@style/Tornado.TextInput</item>
+        <!-- Make the window itself black -->
+        <item name="android:windowBackground">@color/matrixBlack</item>
 
-        <!-- Buttons -->
-        <item name="materialButtonStyle">@style/Tornado.Button</item>
+        <!-- Buttons look “terminal” green on dark -->
+        <item name="materialButtonStyle">@style/TerminalButton</item>
+        <item name="textAppearanceBodyLarge">@style/TerminalBody</item>
+        <item name="textAppearanceBodyMedium">@style/TerminalBody</item>
+        <item name="textAppearanceBodySmall">@style/TerminalBody</item>
     </style>
 
-    <style name="Tornado.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense">
-        <item name="boxBackgroundColor">@color/mx_input_bg</item>
-        <item name="boxStrokeColor">@color/mx_green_dim</item>
-        <item name="hintTextColor">@color/mx_text_dim</item>
-        <item name="android:textColor">@color/mx_text</item>
+    <style name="TerminalButton" parent="Widget.Material3.Button.FilledTonalButton">
+        <item name="backgroundTint">@color/matrixDarker</item>
+        <item name="rippleColor">@color/matrixGreen</item>
+        <item name="android:textColor">@color/matrixGreen</item>
     </style>
 
-    <style name="Tornado.Button" parent="Widget.Material3.Button">
-        <item name="android:background">@drawable/bg_btn</item>
-        <item name="android:textColor">@color/mx_black</item>
-        <item name="rippleColor">@color/mx_ripple</item>
+    <style name="TerminalBody" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/matrixGreen</item>
     </style>
+
 </resources>
