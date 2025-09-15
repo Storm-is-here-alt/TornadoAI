@@ -18,9 +18,11 @@ class ChatFragment : Fragment() {
     private val vm: ChatViewModel by viewModels()
     private lateinit var adapter: ChatAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_chat, container, false)
-    }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? = inflater.inflate(R.layout.fragment_chat, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         adapter = ChatAdapter()
@@ -47,6 +49,7 @@ class ChatFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 vm.uiState.collect { state ->
+                    // state.messages is List<com.storm.tornadoai.ChatMessage> now
                     adapter.submitList(state.messages)
                 }
             }
