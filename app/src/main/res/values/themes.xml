@@ -1,5 +1,36 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.Material3.DayNight.NoActionBar" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:statusBarColor">?attr/colorPrimaryDark</item>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TornadoAI" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- App brand -->
+        <item name="android:statusBarColor">@color/mx_black</item>
+        <item name="android:navigationBarColor">@color/mx_black</item>
+
+        <!-- Material colors -->
+        <item name="colorPrimary">@color/mx_green</item>
+        <item name="colorOnPrimary">@color/mx_black</item>
+        <item name="colorSecondary">@color/mx_green_dim</item>
+        <item name="colorSurface">@color/mx_surface</item>
+        <item name="colorOnSurface">@color/mx_text</item>
+        <item name="colorBackground">@color/mx_black</item>
+        <item name="android:textColorPrimary">@color/mx_text</item>
+
+        <!-- EditText/OutlinedTextField colors (Material3) -->
+        <item name="textInputStyle">@style/Tornado.TextInput</item>
+
+        <!-- Buttons -->
+        <item name="materialButtonStyle">@style/Tornado.Button</item>
+    </style>
+
+    <style name="Tornado.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox.Dense">
+        <item name="boxBackgroundColor">@color/mx_input_bg</item>
+        <item name="boxStrokeColor">@color/mx_green_dim</item>
+        <item name="hintTextColor">@color/mx_text_dim</item>
+        <item name="android:textColor">@color/mx_text</item>
+    </style>
+
+    <style name="Tornado.Button" parent="Widget.Material3.Button">
+        <item name="android:background">@drawable/bg_btn</item>
+        <item name="android:textColor">@color/mx_black</item>
+        <item name="rippleColor">@color/mx_ripple</item>
     </style>
 </resources>
