@@ -1,55 +1,62 @@
 package com.storm.tornadoai
 
-import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
-class ChatAdapter :
-    ListAdapter<ChatMessage, ChatAdapter.VH>(DIFF) {
+/**
+ * Simple adapter that renders user messages with a green bubble and
+ * assistant/bot messages with a dark bubble.
+ *
+ * It expects the data classes declared in your ChatViewModel file:
+ *   data class ChatMessage(val role: Role, val content: String)
+ *   enum class Role { USER, ASSISTANT }
+ */
+class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.VH>(Diff) {
 
     companion object {
-        private val DIFF = object : DiffUtil.ItemCallback<ChatMessage>() {
-            override fun areItemsTheSame(o: ChatMessage, n: ChatMessage) = o === n
-            override fun areContentsTheSame(o: ChatMessage, n: ChatMessage) = o == n
+        private const val TYPE_USER = 0
+        private const val TYPE_BOT = 1
+
+        private object Diff : DiffUtil.ItemCallback<ChatMessage>() {
+            override fun areItemsTheSame(old: ChatMessage, new: ChatMessage): Boolean {
+                // No stable id in the model; compare by reference & content
+                return old === new
+            }
+            override fun areContentsTheSame(old: ChatMessage, new: ChatMessage): Boolean {
+                return old.role == new.role && old.content == new.content
+            }
         }
     }
 
-    inner class VH(val bubble: TextView) : RecyclerView.ViewHolder(bubble)
+    override fun getItemViewType(position: Int): Int {
+        val msg = getItem(position)
+        return if (msg.role == Role.USER) TYPE_USER else TYPE_BOT
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val tv = TextView(parent.context).apply {
-            setTextColor(0xFFEDEDED.toInt())
-            textSize = 16f
+        val inflater = LayoutInflater.from(parent.context)
+        val layoutId = if (viewType == TYPE_USER) {
+            R.layout.item_message_user
+        } else {
+            R.layout.item_message_bot
         }
-        val lp = FrameLayout.LayoutParams(
-            (parent.measuredWidth * 0.85f).toInt(),
-            FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-        val container = FrameLayout(parent.context)
-        container.layoutParams = RecyclerView.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        container.addView(tv, lp)
-        return VH(tv)
+        val view = inflater.inflate(layoutId, parent, false)
+        return VH(view)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        val m = getItem(position)
-        holder.bubble.text = m.content
+        holder.bind(getItem(position))
+    }
 
-        val lp = holder.bubble.layoutParams as FrameLayout.LayoutParams
-        if (m.role == Role.USER) {
-            holder.bubble.setBackgroundResource(R.drawable.bg_bubble_user)
-            lp.gravity = Gravity.END
-        } else {
-            holder.bubble.setBackgroundResource(R.drawable.bg_bubble_bot)
-            lp.gravity = Gravity.START
+    class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val text: TextView = itemView.findViewById(R.id.msg_text)
+        fun bind(msg: ChatMessage) {
+            text.text = msg.content
         }
-        holder.bubble.layoutParams = lp
     }
 }
