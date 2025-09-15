@@ -1,41 +1,72 @@
 package com.storm.tornadoai.ingest
 
-import com.storm.tornadoai.logic.BiasClassifier
-import com.storm.tornadoai.model.BiasFilter
-import com.storm.tornadoai.model.ChatMessage
-import com.storm.tornadoai.model.PropagandaReport
-import com.storm.tornadoai.model.SourceLink
-
 /**
- * Storm Protocol gate: tag messages with bias + propaganda report.
- * Constitutional Override: if message targets officials/agencies, NEVER penalize or warn.
+ * Minimal, compile-safe placeholders for propaganda analysis.
+ * You can improve the heuristics later — these are simple keyword rules.
  */
+
+data class PropagandaReport(
+    val direction: Direction,
+    val targetsOfficials: Boolean,
+    val flags: Set<String>
+)
+
+enum class Direction { PRO, ANTI, NEUTRAL }
+
+/** Marker string that other parts of the app may look for. */
+const val CONSTITUTIONAL_OVERRIDE = "CONSTITUTIONAL_OVERRIDE"
+
 object PropagandaFilter {
 
-    data class Result(
-        val message: ChatMessage,
-        val bias: BiasFilter,
-        val report: PropagandaReport
-    )
+    /**
+     * Main entry point used by the app.
+     * Call this to analyze a piece of text.
+     */
+    fun analyze(text: String): PropagandaReport {
+        val dir = classifyDirection(text)
+        val officials = targetsOfficials(text)
+        val flags = mutableSetOf<String>()
 
-    fun process(msg: ChatMessage, requireEvidence: Boolean = false): Result {
-        val bias = BiasClassifier.classifyDirection(msg.content)
-        val report = BiasClassifier.analyzePropaganda(msg.content)
-
-        val isGovTarget = BiasClassifier.targetsOfficials(msg.content)
-        val overrideActive = BiasClassifier.CONSTITUTIONAL_OVERRIDE && isGovTarget
-
-        // If override is active, no warnings and no evidence nagging.
-        val warn = if (overrideActive) false else (requireEvidence && !report.hasCitations)
-
-        val patched = when {
-            warn -> msg.copy(
-                bias = bias,
-                sources = msg.sources.ifEmpty { listOf(SourceLink("⚠ No citations detected", "")) }
-            )
-            else -> msg.copy(bias = bias)
+        // Extremely rough heuristic for “override constitutional rights”
+        val t = text.lowercase()
+        if (officials &&
+            (t.contains("ban") || t.contains("suspend") || t.contains("strip rights") || t.contains("override constitution"))
+        ) {
+            flags.add(CONSTITUTIONAL_OVERRIDE)
         }
 
-        return Result(message = patched, bias = bias, report = report)
+        return PropagandaReport(direction = dir, targetsOfficials = officials, flags = flags)
     }
 }
+
+/** Simple keyword-based direction classifier. */
+fun classifyDirection(text: String): Direction {
+    val t = text.lowercase()
+    val proHits = listOf("support", "back", "endorse", "praise", "good", "great", "love")
+        .count { it in t }
+    val antiHits = listOf("oppose", "against", "criticize", "attack", "bad", "terrible", "hate")
+        .count { it in t }
+
+    return when {
+        proHits > antiHits -> Direction.PRO
+        antiHits > proHits -> Direction.ANTI
+        else -> Direction.NEUTRAL
+    }
+}
+
+/**
+ * Very loose matcher for whether the text targets public officials/institutions.
+ * Tweak/expand as you like.
+ */
+fun targetsOfficials(text: String): Boolean {
+    val t = text.lowercase()
+    val keywords = listOf(
+        "president", "governor", "mayor", "senator", "congress", "representative",
+        "judge", "supreme court", "police", "sheriff", "attorney general",
+        "minister", "parliament", "prime minister", "official", "agency", "commission"
+    )
+    return keywords.any { it in t }
+}
+
+/** Compatibility alias in case other code calls this older name. */
+fun analyzePropaganda(text: String): PropagandaReport = PropagandaFilter.analyze(text)
