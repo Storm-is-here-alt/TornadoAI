@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Matrix palette -->
-    <color name="mx_black">#000000</color>
-    <color name="mx_surface">#0A0A0A</color>
-    <color name="mx_surface2">#111111</color>
-
-    <color name="mx_green">#00FF41</color>      <!-- bright glyph green -->
-    <color name="mx_green_dim">#00CC33</color>  <!-- slightly dimmed -->
-    <color name="mx_green_weak">#66FF99</color> <!-- secondary accent -->
-
-    <color name="mx_text">#00FF41</color>
-    <color name="mx_text_dim">#88FFBB</color>
-    <color name="mx_divider">#133D21</color>
-    <color name="mx_input_bg">#121212</color>
-    <color name="mx_ripple">#2200FF41</color>
+    <color name="matrixBlack">#000000</color>
+    <color name="matrixGreen">#00FF41</color>
+    <color name="matrixDarker">#001A0C</color>
+    <color name="matrixOn">#E6FFE6</color>
 </resources>
