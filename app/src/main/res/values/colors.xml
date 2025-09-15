@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Matrix palette -->
-    <color name="matrixBlack">#000000</color>
-    <color name="matrixGreen">#00FF41</color>
-    <color name="matrixDarker">#001A0C</color>
-    <color name="matrixOn">#E6FFE6</color>
-
-    <!-- Convenience aliases for Material components -->
-    <color name="terminalSurface">@color/matrixBlack</color>
-    <color name="terminalOnSurface">@color/matrixGreen</color>
+    <color name="matrix_green">#00FF6A</color>
+    <color name="monitor_bg">#0B0F0B</color>
+    <color name="matrix_button_bg">#111311</color>
 </resources>
