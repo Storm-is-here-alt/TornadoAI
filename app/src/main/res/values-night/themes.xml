@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TornadoAI" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">#00FF6A</item>
+        <item name="colorOnPrimary">#001A0E</item>
+
+        <item name="colorSurface">#050705</item>
+        <item name="colorOnSurface">#C6FFD8</item>
+
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+    </style>
+</resources>
