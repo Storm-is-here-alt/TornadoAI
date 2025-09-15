@@ -14,43 +14,36 @@ import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 
 class ChatFragment : Fragment() {
-
     private val vm: ChatViewModel by viewModels()
     private lateinit var adapter: ChatAdapter
+    private lateinit var list: RecyclerView
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_chat, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_chat, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         adapter = ChatAdapter()
-
-        val list = view.findViewById<RecyclerView>(R.id.chat_list)
+        list = view.findViewById(R.id.chat_list)
         list.adapter = adapter
 
         val input = view.findViewById<TextInputEditText>(R.id.chat_input)
-        val send = view.findViewById<MaterialButton>(R.id.chat_send)
-        val tweet = view.findViewById<MaterialButton>(R.id.chat_tweet)
-
-        send.setOnClickListener {
+        view.findViewById<MaterialButton>(R.id.chat_send).setOnClickListener {
             val text = input.text?.toString()?.trim().orEmpty()
             if (text.isNotEmpty()) {
                 vm.onUserMessage(text)
                 input.setText("")
             }
         }
-
-        tweet.setOnClickListener {
+        view.findViewById<MaterialButton>(R.id.chat_tweet).setOnClickListener {
             vm.generateTweetsFromLastAnswer()
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
                 vm.uiState.collect { state ->
-                    // state.messages is List<com.storm.tornadoai.ChatMessage> now
-                    adapter.submitList(state.messages)
+                    adapter.submitList(state.messages) {
+                        list.scrollToPosition(adapter.itemCount - 1)
+                    }
                 }
             }
         }
