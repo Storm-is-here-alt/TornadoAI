@@ -1,17 +1,16 @@
 package com.storm.tornadoai.logic
 
+/**
+ * Simple wrapper logic that uses BiasClassifier.
+ * Keeps the 'when' exhaustive and avoids missing symbol errors.
+ */
 object Logic {
 
-    fun empathyPrefix(bias: BiasClassifier.Bias): String = when (bias) {
-        BiasClassifier.Bias.POSITIVE -> "💡 Noted—and I’m glad to hear it."
-        BiasClassifier.Bias.NEGATIVE -> "💡 I hear your frustration."
-        BiasClassifier.Bias.NEUTRAL  -> "💡 Got it."
-    }
-
-    /** Builds a simple human-like response. */
-    fun humanReply(userText: String): String {
-        val bias = BiasClassifier.classify(userText)   // <-- use .classify(), not BiasClassifier(...)
-        val prefix = empathyPrefix(bias)
-        return "$prefix ${userText.trim()}"
+    fun biasTagFor(text: String): String {
+        return when (BiasClassifier.classify(text)) {
+            Bias.POSITIVE -> "bias:positive"
+            Bias.NEGATIVE -> "bias:negative"
+            Bias.NEUTRAL  -> "bias:neutral"
+        }
     }
 }
